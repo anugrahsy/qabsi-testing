@@ -1,0 +1,12 @@
+{
+  "teams": {
+    "backend": {
+      "clickup_user_id": null,
+      "confluence_account_id": null
+    },
+    "frontend": {
+      "clickup_user_id": null,
+      "confluence_account_id": null
+    }
+  }
+}

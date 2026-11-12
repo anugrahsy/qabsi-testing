@@ -1,0 +1,43 @@
+stages:
+  - verify
+  - qa-report
+  - publish
+
+qa_verify:
+  stage: verify
+  script:
+    - ./project-specific-test-command
+    - ./project-specific-result-normalizer > qabsi-run.json
+  artifacts:
+    when: always
+    paths:
+      - qabsi-run.json
+      - test-results/
+    reports:
+      junit: test-results/junit.xml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+
+qabsi_report:
+  stage: qa-report
+  needs:
+    - job: qa_verify
+      artifacts: true
+  script:
+    - python3 .qabsi/scripts/generate_artifacts.py qabsi-run.json qabsi-artifacts
+  artifacts:
+    when: always
+    paths:
+      - qabsi-artifacts/
+
+qabsi_publish:
+  stage: publish
+  needs:
+    - job: qabsi_report
+      artifacts: true
+  script:
+    - ./authorized-project-specific-publisher qabsi-artifacts
+  when: manual
+  allow_failure: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

@@ -1,20 +1,17 @@
 ---
 name: test-case-generate
-description: Use when only test cases are needed — generate test cases from a PRD or from source code, without running them.
+description: Use when professional risk-based test cases are requested from a PRD, contract, ticket, or source evidence without executing them.
 ---
 
-# Generate Test Case
+# Generate Test Cases
 
-## Overview
-Bikin test case saja, dari PRD atau dari kode.
+1. Establish the authoritative requirement sources and label gaps or contradictions; do not invent expected behavior.
+2. Read `../../references/rules.md` and select layers with `../../references/test-strategy.md`.
+3. Load only relevant indexes/modules through `../../references/skill-tree.md`.
+4. Apply equivalence partitioning, boundaries, decision tables, state transitions, pairwise, risk-based, and exploratory heuristics where they add coverage.
+5. Give each test a stable ID and map requirement IDs, risk IDs, preconditions, data, steps, verifiable expected result, layer, priority, owner team, and evidence expectation.
+6. Include positive, negative, boundary, permission, state, concurrency, recovery, and observability cases only when applicable.
+7. Default unexecuted cases to `not_run`; severity remains null until a defect exists.
+8. Validate against `../../schemas/test-case.schema.json` or prepare the columns defined in `../../references/testing-module-output.md`.
 
-## When to Use
-- Butuh test case.
-- Tidak butuh testing.
-
-## Core Pattern
-1. Sumber: PRD (kalau ada) atau analisa kode.
-2. Susun test case pakai teknik ISTQB (EP/BVA/decision table/state transition) — lihat `../../references/rules.md`.
-3. Enrich pakai knowledge module relevan — lihat `../../references/skill-tree.md`.
-
-Detail: `../../references/rules.md`, `../../references/skill-tree.md`.
+Do not mark generated cases pass/fail or create external tickets without execution and authorization.

@@ -1,37 +1,21 @@
 ---
 name: analyze-testing
-description: Use when the app being tested has no PRD and no test cases — QA must read the source code to understand the flow and test immediately (typically legacy apps).
+description: Use when an authorized application has no trustworthy PRD or test cases and QA must reconstruct current behavior from evidence, create traceable requirements and tests, execute the approved scope, and prepare sanitized draft reports.
 ---
 
 # Analyze Testing
 
-## Overview
-Flow penuh dari nol: clone repo → analisa code → PRD → test case → testing → report → bug ticket.
+Use this end-to-end mode only when requirements or test cases are missing or unreliable.
 
-## When to Use
-- Tidak ada PRD.
-- Tidak ada test case.
-- QA butuh paham alur dari kode lalu testing segera.
+1. Read `../../references/execution-safety.md`; establish repositories/commits, target, environment, accounts/roles, scope, prohibited actions, cleanup, publication authority, and stop conditions.
+2. Reuse an existing checkout when supplied. If cloning is needed, clone only the authorized URLs into a safe workspace. Preserve dirty work and never inspect secret files unless explicitly required and authorized.
+3. Inventory ticket/contract/code/runtime evidence. Label each finding verified, inferred, assumed, open, or recommended.
+4. Build an as-is PRD with `../../references/prd-standard.md`. Do not convert implementation defects or missing behavior into intended requirements.
+5. Select relevant layers with `../../references/test-strategy.md` and `../../references/skill-tree.md`.
+6. Generate requirement- and risk-linked test cases using `../../references/rules.md`.
+7. Execute only authorized checks with real runners/tools. Record commands, versions, timestamps, actual results, and evidence. Never fabricate a pass/fail.
+8. Reproduce failures when safe and classify product defect, test defect, flaky, environment failure, ambiguity, or limitation.
+9. Create a run manifest and generate sanitized Markdown, CSV, XLSX, Confluence, and ClickUp drafts with `../../scripts/generate_artifacts.py`.
+10. Read `../../references/integrations.md`; publish or assign only after explicit authorization and resolved platform identities.
 
-## Core Pattern
-1. Baca ticket: repo BE, repo FE, link Confluence API contract, user testing, deskripsi target web.
-2. `git clone` repo BE & FE (URL dari ticket; asumsi sudah login GitLab mandiri).
-3. Analisa code → pahami alur, logika, aturan, cara kerja.
-4. Buat PRD (kalau belum ada) dari hasil analisa.
-5. Buat test case (.md) pakai teknik ISTQB — lihat `../../references/rules.md`.
-6. Jalankan testing: Chrome DevTools (prioritas) + Playwright. Enrich pakai knowledge module relevan — lihat `../../references/skill-tree.md`.
-7. Rekam video kalau bug (screencast: `navigate` dulu, baru `screencast_start`).
-8. Report → Confluence; bug ticket → ClickUp, assign dari contract Consumer/Maintainer.
-
-## Quick Reference
-- Knowledge selection **context-driven**: identifikasi fitur dulu, load modul relevan saja.
-- Knowledge ≠ test case. Kontrak aplikasi > standar industri.
-- Format report bebas dulu (template menyusul).
-
-## Common Mistakes
-- Klaim pass/fail tanpa benar-benar jalankan.
-- Tebak assignee dari gender.
-- Langsung tulis DB prod.
-- Screencast sebelum page stabil (hasil 0-byte).
-
-Detail: `../../references/flow.md`, `../../references/rules.md`.
+Do not write production data, perform unapproved security/load/destructive tests, or commit/push product code merely because this mode is end-to-end.

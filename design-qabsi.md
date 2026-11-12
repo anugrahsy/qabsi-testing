@@ -1,5 +1,7 @@
 # Design Doc — QABSI (Skill QA Testing BSI UII)
 
+> Historical v0.1 design. Desain v1 yang berlaku ada di `docs/superpowers/specs/2026-11-12-qabsi-v1-design.md`; jika berbeda, v1 menjadi acuan.
+
 Tanggal: 2026-11-12
 Status: draft — menunggu review
 
@@ -97,8 +99,8 @@ Input ticket berisi: repo BE, repo FE, link Confluence API contract, user testin
 6. Jalankan testing: Chrome DevTools (prioritas) + Playwright.
 7. Enrich test case pakai knowledge module (input validation, ui-behavior, api, security).
 8. Rekam video kalau ada bug (screencast).
-9. Susun report → Confluence (format bebas dulu).
-10. Buat bug ticket → ClickUp, assign berdasar contract Consumer/Maintainer.
+9. Susun artifact lokal terstandar (Markdown, CSV, XLSX, dan draft Confluence/ClickUp) dengan redaction.
+10. Setelah otorisasi mutation, deduplikasi defect dan resolve assignee melalui ownership registry berisi platform ID.
 
 ### 5.3 `qa-flow` (PRD + test case sudah ada)
 1. Baca ticket berisi: link contract API, target web (`gateway-dev.uii.ac.id`), PRD/test case.
@@ -136,7 +138,7 @@ Knowledge base = **modul pengetahuan pengujian berbasis domain** (bukan cuma val
 - Tooling: **Chrome DevTools + ClickUp + Confluence** prioritas utama, MCP lain sesuai kondisi.
 - Repo: user kasih URL, sudah login GitLab.
 - Skill disimpan **repo khusus**, installable, push GitHub.
-- Format report: **bebas sekarang**, template menyusul, fleksibel per kondisi.
+- Format report mengikuti schema dan `references/testing-module-output.md`; bagian tambahan tetap fleksibel sesuai konteks.
 
 ## 8. Keputusan yang Diserahkan ke Builder (mark as my call)
 

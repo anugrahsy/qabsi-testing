@@ -1,0 +1,1102 @@
+{
+  "environment": "development",
+  "finished_at": null,
+  "limitations": [
+    "Planning-only pilot: no test case was executed and every status is not_run.",
+    "No target URL, authorized account, OTP sandbox, or runtime contract was provided.",
+    "AuthenticationService is supplied by external package @uiigateway/core 4.1.3 and was not source-reviewed.",
+    "The referenced login APIs are not implemented in the supplied svc-ea-lumen repository.",
+    "Both application worktrees contain unrelated local changes; analyzed login files were not modified."
+  ],
+  "module": "authentication",
+  "run_id": "QABSI-LOGIN-STATIC-20261112",
+  "schema_version": "1.0",
+  "source": {
+    "commit_sha": "347be7947277be6005f5a721e7ec1109e29a9a1e",
+    "merge_request_url": null,
+    "repository": "lib-uii-gateway-ea-angular"
+  },
+  "started_at": "2026-11-12T00:00:00+07:00",
+  "target": null,
+  "test_cases": [
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The router resolves to /account/login and renders LoginComponent without a redirect loop.",
+      "feature": "Login routing",
+      "id": "TC-LOGIN-001",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Angular router is initialized"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-AUTH-001"
+      ],
+      "risk_ids": [],
+      "scenario": "Login alias redirects to the canonical login route",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Navigate to /login",
+        "Observe the final route and component"
+      ],
+      "test_data": {
+        "path": "/login"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Submit remains disabled and required-field feedback is visible for both fields.",
+      "feature": "Direct login form",
+      "id": "TC-LOGIN-002",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Direct login controls are visible"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-AUTH-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Empty username and password cannot be submitted",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Leave both fields empty",
+        "Touch both fields",
+        "Attempt to submit"
+      ],
+      "test_data": {
+        "password": "[REDACTED]",
+        "username": ""
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The form stays invalid and no authentication request is sent.",
+      "feature": "Direct login form",
+      "id": "TC-LOGIN-003",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Direct login controls are visible"
+      ],
+      "priority": "medium",
+      "requirement_ids": [
+        "FR-AUTH-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Only username populated remains invalid",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Enter a synthetic username",
+        "Leave password empty"
+      ],
+      "test_data": {
+        "password": "[REDACTED]",
+        "username": "qa-synthetic"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "One login request succeeds and the user reaches the approved redirect route.",
+      "feature": "Direct login",
+      "id": "TC-LOGIN-004",
+      "layer": "e2e",
+      "module": "Authentication",
+      "notes": "Requires authorized account and target.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized active test account",
+        "2FA disabled for the account"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-AUTH-003"
+      ],
+      "risk_ids": [],
+      "scenario": "Valid credentials navigate to the approved redirect URL",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Enter valid test credentials",
+        "Submit once",
+        "Observe navigation"
+      ],
+      "test_data": {
+        "password": "[REDACTED]",
+        "username": "authorized-test-account"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Failures do not disclose whether an account exists and do not expose internal details.",
+      "feature": "Direct login",
+      "id": "TC-LOGIN-005",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Active security comparison needs explicit authorization.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized test endpoint and rate ceiling"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-AUTH-004"
+      ],
+      "risk_ids": [
+        "RISK-REC-ENUMERATION"
+      ],
+      "scenario": "Unknown username and wrong password produce equivalent safe failures",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit an unknown synthetic username",
+        "Submit a known test username with wrong password",
+        "Compare status, body, visible message, and timing"
+      ],
+      "test_data": {
+        "password": "[REDACTED]",
+        "username_classes": [
+          "unknown",
+          "known-test"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The button remains disabled while loading and only one service call is initiated.",
+      "feature": "Submission state",
+      "id": "TC-LOGIN-006",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Authentication callback is intentionally delayed"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-AUTH-003"
+      ],
+      "risk_ids": [],
+      "scenario": "Repeated submit while loading initiates one request",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit valid-shaped data",
+        "Immediately activate submit repeatedly",
+        "Count service calls"
+      ],
+      "test_data": {
+        "password": "[REDACTED]",
+        "username": "qa-synthetic"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Direct-login controls are hidden while approved SSO entry points remain available.",
+      "feature": "Environment behavior",
+      "id": "TC-LOGIN-007",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "production configuration is true",
+        "No developer query parameter"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-AUTH-005"
+      ],
+      "risk_ids": [],
+      "scenario": "Production hides direct login controls by default",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Render LoginComponent",
+        "Inspect direct-login and SSO controls"
+      ],
+      "test_data": {
+        "production": true,
+        "query": ""
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Behavior matches an explicitly approved policy and cannot bypass server-side authentication controls.",
+      "feature": "Environment behavior",
+      "id": "TC-LOGIN-008",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Do not execute against production without technique-level authorization.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Explicit authorization to evaluate alternate production auth surface"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-AUTH-005"
+      ],
+      "risk_ids": [
+        "RISK-AUTH-DEV-OVERRIDE"
+      ],
+      "scenario": "Developer query override follows approved production policy",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Open production login with a truthy developer query",
+        "Inspect visible controls",
+        "Verify server-side restrictions independently"
+      ],
+      "test_data": {
+        "query": "developer=synthetic"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Both links are present and match the approved destinations for the environment.",
+      "feature": "SSO links",
+      "id": "TC-SSO-001",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Environment configuration is loaded"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-SSO-001"
+      ],
+      "risk_ids": [],
+      "scenario": "Member and parent SSO links use environment configuration",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Render login page",
+        "Inspect both SSO link destinations"
+      ],
+      "test_data": {
+        "link_types": [
+          "member",
+          "parent"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The callback is accepted once and the user reaches the approved redirect route.",
+      "feature": "SSO callback",
+      "id": "TC-SSO-002",
+      "layer": "e2e",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized SSO sandbox and callback identity"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-SSO-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Valid SSO callback authenticates and redirects",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Complete sandbox SSO",
+        "Return to callback route",
+        "Observe final navigation"
+      ],
+      "test_data": {
+        "access_token": "[REDACTED]",
+        "ttl": "authorized-sandbox-ttl"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Authentication is rejected, no session is established, and a safe error is displayed.",
+      "feature": "SSO callback",
+      "id": "TC-SSO-003",
+      "layer": "e2e",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized SSO sandbox"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-SSO-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Invalid or expired SSO callback is rejected safely",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Open callback with an invalid sandbox token",
+        "Observe error and session state"
+      ],
+      "test_data": {
+        "access_token": "[REDACTED]",
+        "ttl": "expired"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Logout is called once and no SSO login call is made.",
+      "feature": "Login initialization",
+      "id": "TC-SSO-004",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "Product owner must confirm the desired session UX.",
+      "owner_team": "frontend",
+      "preconditions": [
+        "LoginComponent is created without access_token"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-SSO-003"
+      ],
+      "risk_ids": [],
+      "scenario": "Opening login without a query token invokes logout once",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Initialize the component",
+        "Observe AuthenticationService calls"
+      ],
+      "test_data": {
+        "query": ""
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "No reusable secret is retained or disclosed beyond the approved exchange boundary.",
+      "feature": "SSO secret handling",
+      "id": "TC-SSO-005",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Explicit security authorization required.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized sandbox token",
+        "Evidence capture excludes real secrets"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-SSO-002"
+      ],
+      "risk_ids": [
+        "RISK-AUTH-URL-TOKEN"
+      ],
+      "scenario": "Authentication secrets do not leak through browser surfaces",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Complete a sandbox callback",
+        "Inspect address history, referrer behavior, console, analytics, and logs",
+        "Verify token cleanup"
+      ],
+      "test_data": {
+        "access_token": "[REDACTED]"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Malformed paths are rejected predictably without logging secrets or navigating to an unintended route.",
+      "feature": "SSO route parsing",
+      "id": "TC-SSO-006",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "LoginSSOComponent is isolated with a mocked auth service"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-SSO-002"
+      ],
+      "risk_ids": [
+        "RISK-AUTH-URL-TOKEN"
+      ],
+      "scenario": "Malformed SSO callback path fails without unsafe navigation",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Provide missing or extra path segments",
+        "Initialize component",
+        "Observe service parameters and navigation"
+      ],
+      "test_data": {
+        "paths": [
+          "/account/loginsso",
+          "/account/loginsso/member-only",
+          "/account/loginsso/member/session/extra"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Direct navigation does not occur and the required authenticator form is displayed.",
+      "feature": "2FA state",
+      "id": "TC-MFA-001",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Mock primary login succeeds with enable2Fa true"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-MFA-001"
+      ],
+      "risk_ids": [],
+      "scenario": "2FA-enabled primary login shows the authenticator form",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit valid-shaped primary credentials",
+        "Resolve auth callback",
+        "Inspect component state"
+      ],
+      "test_data": {
+        "enable2Fa": true
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The form remains invalid and verify2FA is not called.",
+      "feature": "2FA validation",
+      "id": "TC-MFA-002",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "2FA form is visible"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-MFA-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Empty authenticator code cannot be submitted",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Leave the code empty",
+        "Submit the form"
+      ],
+      "test_data": {
+        "code": "[REDACTED]"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Verification succeeds once and navigation reaches the approved redirect route.",
+      "feature": "2FA verification",
+      "id": "TC-MFA-003",
+      "layer": "e2e",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized 2FA test account and authenticator"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-MFA-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Valid authenticator code completes login",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Complete primary login",
+        "Enter the current valid code",
+        "Submit once"
+      ],
+      "test_data": {
+        "code": "[REDACTED]"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Every invalid class is rejected and no full session is issued.",
+      "feature": "2FA verification",
+      "id": "TC-MFA-004",
+      "layer": "api",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized 2FA API contract and test identities"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-MFA-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Wrong, expired, reused, and cross-account codes are rejected",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit each invalid code class within the approved rate",
+        "Observe session and response"
+      ],
+      "test_data": {
+        "code_classes": [
+          "wrong",
+          "expired",
+          "reused",
+          "other-account"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Pre-MFA state cannot access resources requiring full authentication.",
+      "feature": "2FA authorization",
+      "id": "TC-MFA-005",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Explicit security authorization required.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Explicit auth-bypass testing authorization",
+        "2FA-enabled test identity"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-MFA-001",
+        "FR-MFA-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Post-login resources cannot be accessed before second-factor verification",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Complete only the primary factor",
+        "Attempt an approved protected request",
+        "Compare after MFA success"
+      ],
+      "test_data": {
+        "role": "authorized-2fa-test-role"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Attempts are bounded without uncontrolled account denial-of-service and recovery follows policy.",
+      "feature": "2FA throttling",
+      "id": "TC-MFA-006",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Rate and lockout policy must be supplied before execution.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Approved attempt ceiling and disposable 2FA account"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-MFA-002"
+      ],
+      "risk_ids": [],
+      "scenario": "Repeated invalid codes are throttled according to contract",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit invalid codes up to the approved boundary",
+        "Submit once beyond the boundary",
+        "Observe recovery behavior"
+      ],
+      "test_data": {
+        "attempts": "contract-boundary"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Login/2FA forms are replaced by the account-recovery entry state with no retained credential values.",
+      "feature": "Password recovery",
+      "id": "TC-REC-001",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Login page is visible"
+      ],
+      "priority": "medium",
+      "requirement_ids": [
+        "FR-REC-001"
+      ],
+      "risk_ids": [],
+      "scenario": "Forgot-password action switches from login to recovery",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Activate forgot password",
+        "Inspect visible forms and initial state"
+      ],
+      "test_data": {}
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The request, status, response envelope, and error behavior conform to the approved contract.",
+      "feature": "Password recovery",
+      "id": "TC-REC-002",
+      "layer": "contract",
+      "module": "Authentication",
+      "notes": "Blocked until contract is supplied.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Recovery API contract is available"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-REC-001"
+      ],
+      "risk_ids": [],
+      "scenario": "Account verification request matches the approved API contract",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit a synthetic test account",
+        "Validate request and response schema"
+      ],
+      "test_data": {
+        "kd_member": "authorized-test-member"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Responses do not disclose account existence beyond approved policy.",
+      "feature": "Password recovery",
+      "id": "TC-REC-003",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Explicit security authorization required.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized identities and comparison scope"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-REC-001"
+      ],
+      "risk_ids": [
+        "RISK-REC-ENUMERATION"
+      ],
+      "scenario": "Known and unknown accounts receive enumeration-safe recovery responses",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Request recovery for known test account",
+        "Request recovery for unknown synthetic account",
+        "Compare status, body, timing, and UI"
+      ],
+      "test_data": {
+        "account_classes": [
+          "known-test",
+          "unknown-synthetic"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "One request is recorded, loading settles, and the OTP entry state is enabled without exposing the code.",
+      "feature": "OTP request",
+      "id": "TC-REC-004",
+      "layer": "e2e",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized test account and WhatsApp sandbox"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-REC-001"
+      ],
+      "risk_ids": [],
+      "scenario": "Verified test account receives one sandbox OTP request",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit the test account once",
+        "Observe loading and OTP state",
+        "Verify sandbox delivery record"
+      ],
+      "test_data": {
+        "kd_member": "authorized-test-member"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The flow advances once, a scoped token is returned securely, and reuse is rejected.",
+      "feature": "OTP verification",
+      "id": "TC-REC-005",
+      "layer": "api",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized recovery account and current sandbox OTP"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-REC-002"
+      ],
+      "risk_ids": [
+        "RISK-OTP-STATE"
+      ],
+      "scenario": "Valid OTP advances once and returns a scoped reset token",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit the valid code",
+        "Observe response and UI transition",
+        "Attempt safe reuse according to contract"
+      ],
+      "test_data": {
+        "code": "[REDACTED]"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Every invalid class is rejected without issuing a reset token or leaking account data.",
+      "feature": "OTP verification",
+      "id": "TC-REC-006",
+      "layer": "api",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Authorized recovery test identities and rate ceiling"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-REC-002"
+      ],
+      "risk_ids": [
+        "RISK-OTP-STATE"
+      ],
+      "scenario": "Wrong, expired, reused, and cross-account recovery codes are rejected",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit each invalid code class",
+        "Observe response and recovery state"
+      ],
+      "test_data": {
+        "code_classes": [
+          "wrong",
+          "expired",
+          "reused",
+          "other-account"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "The mismatch is blocked with specific feedback and no password change occurs.",
+      "feature": "Password reset",
+      "id": "TC-REC-007",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "Current client-side match validation was not found.",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Recovery token state is reached"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-REC-003"
+      ],
+      "risk_ids": [
+        "RISK-REC-POLICY"
+      ],
+      "scenario": "Mismatched password confirmation is prevented or rejected clearly",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Enter two different synthetic passwords",
+        "Attempt submit"
+      ],
+      "test_data": {
+        "password": "[REDACTED]",
+        "password_konfirmasi": "[REDACTED]"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "UI and API consistently enforce the approved policy without exposing password values.",
+      "feature": "Password reset",
+      "id": "TC-REC-008",
+      "layer": "contract",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Approved password and reset API contract"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-REC-003"
+      ],
+      "risk_ids": [
+        "RISK-REC-POLICY"
+      ],
+      "scenario": "Password policy boundaries are enforced consistently by UI and API",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Submit authorized synthetic values at policy boundaries",
+        "Compare UI and API behavior"
+      ],
+      "test_data": {
+        "character_classes": [
+          "unicode",
+          "space",
+          "common-blocked"
+        ],
+        "length_classes": [
+          "min-1",
+          "min",
+          "max",
+          "max+1"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Only the valid first use succeeds; all other classes are rejected without account change.",
+      "feature": "Password reset",
+      "id": "TC-REC-009",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Explicit security authorization required.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Explicit authorized token-lifecycle test scope"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-REC-003"
+      ],
+      "risk_ids": [],
+      "scenario": "Reset token is account-bound, short-lived, single-use, and invalid after success",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Use a valid sandbox reset token once",
+        "Attempt reuse and cross-account use",
+        "Check boundary expiry behavior"
+      ],
+      "test_data": {
+        "token_classes": [
+          "valid",
+          "expired",
+          "reused",
+          "other-account"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Old sessions/tokens are invalidated according to the approved recovery policy.",
+      "feature": "Session lifecycle",
+      "id": "TC-REC-010",
+      "layer": "security",
+      "module": "Authentication",
+      "notes": "Policy is currently unknown.",
+      "owner_team": "auth-platform",
+      "preconditions": [
+        "Disposable account with approved pre-reset sessions"
+      ],
+      "priority": "critical",
+      "requirement_ids": [
+        "FR-REC-003"
+      ],
+      "risk_ids": [],
+      "scenario": "Successful reset follows the approved session and token invalidation policy",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Establish approved test sessions",
+        "Complete reset",
+        "Attempt old session/token use"
+      ],
+      "test_data": {
+        "sessions": "authorized-disposable-sessions"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Recovery identifiers, OTP, token, passwords, errors, loading, and visibility return to the initial login state.",
+      "feature": "Recovery state cleanup",
+      "id": "TC-STATE-001",
+      "layer": "component",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Recovery flow contains account, OTP, token, and password state"
+      ],
+      "priority": "high",
+      "requirement_ids": [
+        "FR-STATE-001"
+      ],
+      "risk_ids": [],
+      "scenario": "Back action clears local recovery secrets and flags",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Populate synthetic recovery state",
+        "Activate back",
+        "Inspect component and visible controls"
+      ],
+      "test_data": {
+        "state": "synthetic-populated-recovery-state"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Interactive elements are reachable in logical order, visibly focused, and operable without a pointer.",
+      "feature": "Keyboard accessibility",
+      "id": "TC-A11Y-001",
+      "layer": "accessibility",
+      "module": "Authentication",
+      "notes": "Accessibility target requires product confirmation.",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Supported desktop browser and no mouse input"
+      ],
+      "priority": "high",
+      "requirement_ids": [],
+      "risk_ids": [],
+      "scenario": "All login, SSO, 2FA, recovery, and back actions are keyboard operable",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Traverse the entire flow by keyboard",
+        "Activate every available action",
+        "Observe focus"
+      ],
+      "test_data": {
+        "input": "keyboard-only"
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Every control has an unambiguous programmatic name and each error is perceivable and associated with its field.",
+      "feature": "Form semantics",
+      "id": "TC-A11Y-002",
+      "layer": "accessibility",
+      "module": "Authentication",
+      "notes": "Placeholders alone may not satisfy the approved accessibility target.",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Accessibility tree inspection is available"
+      ],
+      "priority": "high",
+      "requirement_ids": [],
+      "risk_ids": [],
+      "scenario": "Inputs have programmatic names and errors are associated with fields",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Inspect each form control name/role/state",
+        "Trigger validation errors",
+        "Inspect error association"
+      ],
+      "test_data": {
+        "forms": [
+          "login",
+          "2fa",
+          "recovery",
+          "password-reset"
+        ]
+      }
+    },
+    {
+      "actual_result": "",
+      "evidence": [],
+      "expected_result": "Dynamic states are perceivable without relying only on color or visual position, and focus moves predictably.",
+      "feature": "Dynamic status",
+      "id": "TC-A11Y-003",
+      "layer": "accessibility",
+      "module": "Authentication",
+      "notes": "",
+      "owner_team": "frontend",
+      "preconditions": [
+        "Screen-reader inspection is available"
+      ],
+      "priority": "high",
+      "requirement_ids": [],
+      "risk_ids": [],
+      "scenario": "Loading, errors, success, and step transitions are announced",
+      "severity": null,
+      "status": "not_run",
+      "steps": [
+        "Trigger loading, validation, service failure, OTP success, and reset success states",
+        "Observe announcements and focus movement"
+      ],
+      "test_data": {
+        "states": [
+          "loading",
+          "error",
+          "success",
+          "step-change"
+        ]
+      }
+    }
+  ],
+  "title": "Gateway EA login and recovery pilot"
+}

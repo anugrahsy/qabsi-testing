@@ -1,74 +1,48 @@
-# Rules — Standar QA & Teknik Test Design
+# QA and Test Design Rules
 
-Landasan metodologi QABSI. Sumber: ISTQB CTFL v4.0.1, ISO 29119.
+QABSI applies risk-based testing and established black-box techniques. Testing can demonstrate defects but cannot prove their absence; exhaustive testing is not a realistic goal.
 
-## Prinsip Testing (ISTQB)
+## Test design techniques
 
-1. Testing menunjukkan adanya defect, bukan membuktikan tidak ada defect.
-2. Exhaustive testing tidak mungkin — gunakan teknik + prioritas risiko.
-3. Early testing — cari defect sedini mungkin.
-4. Defect clustering — sebagian kecil modul memuat sebagian besar defect.
-5. Pesticide paradox — test case yang sama lama-lama tak menemukan bug baru.
-6. Testing context-dependent — cara testing beda per konteks.
-7. Absence-of-errors fallacy — bebas bug ≠ memenuhi kebutuhan bisnis.
+- **Equivalence partitioning:** representative valid/invalid classes.
+- **Boundary value analysis:** values below, at, and above meaningful limits.
+- **Decision tables:** relevant combinations of conditions and outcomes.
+- **State transitions:** allowed/forbidden transitions, repeated events, and recovery.
+- **Pairwise/combinatorial:** reduce combinations without erasing high-risk interactions.
+- **Error guessing/exploratory:** experience-based investigation with a charter and notes.
+- **Risk-based selection:** prioritize impact × likelihood × detectability and change exposure.
 
-## Teknik Test Design
+## Test case contract
 
-### A. Equivalence Partitioning (EP)
-Bagi input jadi kelompok dengan perilaku sama. Uji satu perwakilan tiap kelompok.
-- Valid: nilai dalam kelompok diterima.
-- Invalid: nilai luar kelompok ditolak.
-
-### B. Boundary Value Analysis (BVA)
-Uji nilai di batas min/max. Bug sering di batas.
-- Below minimum → reject; minimum → accept; above minimum → accept.
-- Below maximum → accept; maximum → accept; above maximum → reject.
-
-### C. Decision Table Testing
-Kombinasi kondisi → hasil. Pakai saat hasil bergantung banyak kondisi.
-
-### D. State Transition Testing
-Uji transisi status yang boleh/tidak. Setiap transisi punya aturan.
-
-### E. Pairwise / Combinatorial
-Kombinasi parameter. Kurangi jumlah kasus tanpa kehilangan cakupan penting.
-
-### F. Error Guessing / Exploratory
-Berdasar pengalaman + heuristik. Bukan pengganti teknik formal.
-
-## Struktur Test Case
-
-| Field | Keterangan |
+| Field | Rule |
 |---|---|
-| Test Case ID | Identitas unik |
-| Module | Modul yang diuji |
-| Feature | Fitur yang diuji |
-| Scenario | Kondisi yang diuji |
-| Preconditions | Kondisi awal |
-| Test Data | Data yang dipakai |
-| Test Steps | Langkah pengujian |
-| Expected Result | Hasil seharusnya (spesifik, verifiable) |
-| Actual Result | Hasil aktual |
-| Status | Pass / Fail / Blocked |
-| Priority | Critical / High / Medium / Low |
-| Severity | Tingkat dampak defect |
-| Evidence | Screenshot, log, response API, video |
+| ID | Stable and unique |
+| Requirement/Risk IDs | Trace to intent and reason for testing |
+| Module/Feature/Layer | Identify scope and evidence level |
+| Scenario | One clear condition/outcome |
+| Preconditions | Observable starting state and role |
+| Test data | Synthetic/minimized; secrets never embedded |
+| Steps | Reproducible actions, not implementation narration |
+| Expected result | Specific and verifiable from an authoritative source |
+| Actual result | Recorded only after execution |
+| Status | `pass`, `fail`, `blocked`, `skipped`, `not_run`, `flaky`, `environment_error` |
+| Priority | Test execution importance: critical/high/medium/low |
+| Severity | Defect impact; null until a defect exists |
+| Evidence | Sanitized path/link plus capture context |
+| Owner team | Approved ownership key, not guessed person |
 
-Expected Result wajib spesifik & verifiable. Hindari "sistem berjalan normal".
+Generated cases start as `not_run`. A test is `pass` only when its expected result was observed, and `fail` only when a reproducible mismatch was observed. Use `environment_error` for unavailable dependencies/configuration and `flaky` for inconsistent repeat behavior.
 
-## Jenis Testing
+## Coverage expectations
 
-Unit · Component · Integration · Functional · API · Contract · E2E · Regression · Security · Performance · Accessibility · Compatibility.
+Select relevant positive, negative, boundary, permission, state, concurrency, idempotency, timeout/retry, recovery, audit/observability, accessibility, compatibility, privacy, and security cases. Do not multiply irrelevant cases to inflate coverage.
 
-## Bug Report Standard
+## Defect standard
 
-- Summary singkat (1 kalimat: apa, di mana, dampak).
-- Steps to reproduce (urutan pasti).
-- Expected vs Actual.
-- Environment (browser, device, endpoint, env).
-- Evidence (screenshot/video/log/curl).
-- Severity (dampak) vs Priority (urgensi) terpisah.
+Record one observable defect per ticket unless multiple symptoms share one root behavior and owner. Include concise impact, exact reproduction, expected/actual, environment, source commit/MR, sanitized evidence, severity rationale, owner team, test case/run IDs, and stable fingerprint.
 
-## Knowledge vs Test Case
+Severity reflects impact; priority reflects scheduling. A failed test is not automatically a new defect: check duplication, requirement ambiguity, environment, test correctness, and flakiness first.
 
-Knowledge = metode & skenario yang perlu dipertimbangkan. Test case = hasil penerapannya pada aplikasi tertentu. Jangan samakan.
+## Traceability quality gate
+
+For every critical/high risk, show requirement/source → risk → test case → execution result/evidence → defect or accepted residual risk. Explicitly list untested requirements and why.

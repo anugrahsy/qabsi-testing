@@ -1,7 +1,7 @@
 {
   "name": "qabsi",
-  "version": "0.1.0",
-  "description": "QA testing skill BSI UII: manual + automated testing, analisa kode ke PRD/test case, report, dan bug ticket.",
+  "version": "1.0.0",
+  "description": "Evidence-backed QA BSI UII: professional PRD, risk-based manual and automated testing, spreadsheets, reports, and safe defect drafts.",
   "author": {
     "name": "BSI UII"
   },
@@ -11,8 +11,8 @@
   "hooks": {},
   "interface": {
     "displayName": "QABSI",
-    "shortDescription": "QA testing BSI UII",
-    "longDescription": "Skill QA testing: analyze-testing, testing, prd-generate, test-case-generate, security-testing.",
+    "shortDescription": "Evidence-backed QA and vibe testing",
+    "longDescription": "Professional PRD generation, traceable risk-based testing, sanitized spreadsheets/reports, and safe Confluence/ClickUp drafts.",
     "category": "Developer Tools"
   }
 }

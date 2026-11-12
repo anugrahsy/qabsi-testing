@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "run_id": "QA-20261112-001",
+  "title": "Login regression",
+  "module": "authentication",
+  "environment": "staging",
+  "target": "https://staging.example.test",
+  "started_at": "2026-11-12T09:00:00+07:00",
+  "finished_at": "2026-11-12T09:12:00+07:00",
+  "source": {
+    "repository": "group/application",
+    "commit_sha": "0123456789abcdef0123456789abcdef01234567",
+    "merge_request_url": "https://gitlab.example.test/group/application/-/merge_requests/42"
+  },
+  "limitations": [
+    "SSO provider timeout scenario was not executed."
+  ],
+  "test_cases": [
+    {
+      "id": "TC-AUTH-001",
+      "requirement_ids": ["FR-AUTH-001"],
+      "risk_ids": ["RISK-AUTH-SESSION"],
+      "module": "Authentication",
+      "feature": "Login",
+      "layer": "e2e",
+      "scenario": "Login with valid credentials",
+      "preconditions": ["Active test account exists"],
+      "steps": ["Open login page", "Enter test credentials", "Submit"],
+      "test_data": {
+        "username": "qa-user@example.test",
+        "password": "SuperSecret!",
+        "authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.secret.signature"
+      },
+      "expected_result": "Dashboard is displayed and a new authenticated session is issued.",
+      "actual_result": "Dashboard displayed.",
+      "status": "pass",
+      "priority": "critical",
+      "severity": null,
+      "evidence": ["evidence/TC-AUTH-001.png"],
+      "owner_team": "frontend",
+      "notes": ""
+    },
+    {
+      "id": "TC-AUTH-002",
+      "requirement_ids": ["FR-AUTH-002"],
+      "risk_ids": ["RISK-AUTH-ENUMERATION"],
+      "module": "Authentication",
+      "feature": "Login",
+      "layer": "api",
+      "scenario": "Invalid password returns a generic error",
+      "preconditions": ["Active test account exists"],
+      "steps": ["Send login request with an invalid password"],
+      "test_data": {"username": "qa-user@example.test", "password": "wrong-password"},
+      "expected_result": "Request is rejected with a generic authentication error.",
+      "actual_result": "Response reveals that the username exists.",
+      "status": "fail",
+      "priority": "critical",
+      "severity": "high",
+      "evidence": ["evidence/TC-AUTH-002-response.json"],
+      "owner_team": "backend",
+      "notes": "Reproduced twice."
+    }
+  ]
+}

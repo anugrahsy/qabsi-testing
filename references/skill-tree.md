@@ -1,6 +1,6 @@
 # Skill Tree — Struktur QABSI
 
-Plugin `qabsi` → skill ter-prefix `qabsi:` (mis. `/qabsi:testing`, seperti `superpowers:brainstorming`).
+Codex memakai root `qabsi-testing`; plugin Claude memakai skill ter-prefix `qabsi:`. Keduanya berbagi references, schemas, assets, dan scripts yang sama.
 
 ## Skill (5)
 
@@ -11,6 +11,8 @@ Plugin `qabsi` → skill ter-prefix `qabsi:` (mis. `/qabsi:testing`, seperti `su
 | `qabsi:prd-generate` | PRD saja | Butuh PRD |
 | `qabsi:test-case-generate` | Test case saja | Butuh test case |
 | `qabsi:security-testing` | Security assessment | Minta cek keamanan |
+
+Root router memilih salah satu mode di atas dan selalu menerapkan `execution-safety.md`.
 
 ## References (heavy — di-load on demand)
 
@@ -28,6 +30,12 @@ Plugin `qabsi` → skill ter-prefix `qabsi:` (mis. `/qabsi:testing`, seperti `su
 | `testing-module-data.md` | Index domain Data & Persistence |
 | `testing-module-non-functional.md` | Index domain Non-functional |
 | `testing-module-output.md` | Format report + bug ticket |
+| `prd-standard.md` | PRD profesional berbasis bukti + traceability |
+| `test-strategy.md` | Pemilihan layer testing berbasis risiko |
+| `execution-safety.md` | Otorisasi, environment, destructive/load/security gate |
+| `evidence-and-privacy.md` | Evidence, redaction, dan data pribadi |
+| `integrations.md` | Draft/publish Confluence dan ClickUp anti-duplikasi |
+| `gitlab-ci.md` | Orkestrasi runner dan artifacts melalui GitLab CI |
 
 ## Knowledge Modules (detail — `references/knowledge/<domain>/`)
 

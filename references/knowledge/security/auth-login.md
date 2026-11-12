@@ -9,8 +9,8 @@ Setiap fitur yang meminta kredensial untuk mengidentifikasi pengguna: login form
 ## Testing Principles
 1. Pesan error login harus **generik** — jangan bedakan "username tidak ditemukan" vs "password salah" (mencegah enumerasi akun).
 2. Respons (status, body, waktu) tidak boleh membedakan akun valid vs tidak valid.
-3. Lockout harus **deterministik**: ambang percobaan, durasi, dan reset counter jelas.
-4. Setelah login sukses, kredensial lama/sesi lama harus dirotasi (jangan reuse sesi lama).
+3. Throttling/rate limiting harus terukur. Jika kontrak memakai account lockout, ambang, durasi, reset counter, pemulihan, dan risiko denial-of-service harus jelas.
+4. Setelah login sukses, session identifier/token harus dirotasi untuk mencegah session fixation; password pengguna tidak otomatis diubah.
 5. Transmisi kredensial wajib lewat kanal terenkripsi (HTTPS); kredensial tidak boleh masuk log/URL.
 
 ## Test Design Techniques
@@ -70,7 +70,7 @@ Setiap fitur yang meminta kredensial untuk mengidentifikasi pengguna: login form
 
 ## Security Considerations
 - Enumerasi akun via pesan error, timing, atau perbedaan status HTTP.
-- Brute force / credential stuffing → wajib rate limit + lockout.
+- Brute force / credential stuffing → wajib mitigasi terukur seperti rate limit/throttling; lockout mengikuti kebijakan risiko dan tidak boleh membuka denial-of-service yang mudah.
 - Credential dalam teks terbuka (tanpa HTTPS) → MITM.
 - Logging kredensial → kebocoran lewat log/aggregator.
 

@@ -1,31 +1,31 @@
-# Testing Module — Output (Report & Bug Ticket)
+# Output Contract
 
-Format output QABSI. Bebas dulu, template menyusul, fleksibel per kondisi.
+## Local artifacts
 
-## Report (Confluence)
+The canonical input is a sanitized run manifest conforming to `../schemas/test-run.schema.json`. Generate:
 
-Struktur minimum:
+- `sanitized-run.json` — machine-readable source of report truth.
+- `qa-report.md` — human review report.
+- `test-cases.csv` — portable tabular export.
+- `test-cases.xlsx` — formatted spreadsheet with filter, frozen header, status validation, and wrapped cells.
+- `confluence-draft.json` — unpublished report draft.
+- `clickup-drafts.json` — deduplicated confirmed-defect drafts only.
 
-```markdown
-# QA Report — [Ticket] [Judul]
+## QA report minimum
 
-## Info          # ticket, tanggal, tester, environment
-## Scope         # target web, user, API contract
-## Ringkasan     # apa yang diuji + hasil
-## Test Cases    # tabel: ID | skenario | expected | actual | status
-## Temuan Bug    # list bug + link ticket
-## Evidence      # screenshot, video, curl, log
-## Catatan       # keterbatasan, catatan
-```
+- Run/ticket, dates, source commit/MR, tester/agent, target and environment.
+- Scope, requirements/risks, selected layers, tools/versions, and test data policy.
+- Status summary and traceable case details.
+- Confirmed defects and separate flaky/environment/blocked outcomes.
+- Sanitized evidence and cleanup state.
+- Limitations, untested risk, assumptions, and residual risk.
 
-## Bug Ticket (ClickUp)
+## Spreadsheet columns
 
-Field minimum:
-- **Summary** — 1 kalimat: apa, di mana, dampak.
-- **Steps to Reproduce** — urutan pasti.
-- **Expected vs Actual**.
-- **Environment** — browser, endpoint, env (dev/stag/prod).
-- **Evidence** — video/screenshot/curl.
-- **Assignee** — resolve dari contract Consumer/Maintainer.
+Test Case ID, Module, Feature, Layer, Scenario, Preconditions, Test Steps, Test Data, Expected Result, Actual Result, Status, Priority, Severity, Evidence, Owner Team, and Notes.
 
-Catatan: task type "Bug" mungkin tak ada di ClickUp → prefix `[BUG]` + label.
+## Defect draft minimum
+
+Summary/impact, test case and run IDs, source commit/MR, environment, reproducible steps, expected/actual, sanitized evidence, severity rationale, owner team, stable fingerprint, and unresolved assignee reference.
+
+Publishing and assignment follow `integrations.md`; generated payloads are drafts, not proof of external creation.

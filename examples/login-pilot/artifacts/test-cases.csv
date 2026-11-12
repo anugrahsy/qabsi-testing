@@ -1,0 +1,94 @@
+﻿Test Case ID,Requirement IDs,Risk IDs,Module,Feature,Layer,Scenario,Preconditions,Test Steps,Test Data,Expected Result,Actual Result,Status,Priority,Severity,Evidence,Owner Team,Notes
+TC-LOGIN-001,FR-AUTH-001,,Authentication,Login routing,component,Login alias redirects to the canonical login route,Angular router is initialized,"Navigate to /login
+Observe the final route and component","{""path"": ""/login""}",The router resolves to /account/login and renders LoginComponent without a redirect loop.,,not_run,high,,,frontend,
+TC-LOGIN-002,FR-AUTH-002,,Authentication,Direct login form,component,Empty username and password cannot be submitted,Direct login controls are visible,"Leave both fields empty
+Touch both fields
+Attempt to submit","{""password"": ""[REDACTED]"", ""username"": """"}",Submit remains disabled and required-field feedback is visible for both fields.,,not_run,high,,,frontend,
+TC-LOGIN-003,FR-AUTH-002,,Authentication,Direct login form,component,Only username populated remains invalid,Direct login controls are visible,"Enter a synthetic username
+Leave password empty","{""password"": ""[REDACTED]"", ""username"": ""qa-synthetic""}",The form stays invalid and no authentication request is sent.,,not_run,medium,,,frontend,
+TC-LOGIN-004,FR-AUTH-003,,Authentication,Direct login,e2e,Valid credentials navigate to the approved redirect URL,"Authorized active test account
+2FA disabled for the account","Enter valid test credentials
+Submit once
+Observe navigation","{""password"": ""[REDACTED]"", ""username"": ""authorized-test-account""}",One login request succeeds and the user reaches the approved redirect route.,,not_run,critical,,,auth-platform,Requires authorized account and target.
+TC-LOGIN-005,FR-AUTH-004,RISK-REC-ENUMERATION,Authentication,Direct login,security,Unknown username and wrong password produce equivalent safe failures,Authorized test endpoint and rate ceiling,"Submit an unknown synthetic username
+Submit a known test username with wrong password
+Compare status, body, visible message, and timing","{""password"": ""[REDACTED]"", ""username_classes"": [""unknown"", ""known-test""]}",Failures do not disclose whether an account exists and do not expose internal details.,,not_run,critical,,,auth-platform,Active security comparison needs explicit authorization.
+TC-LOGIN-006,FR-AUTH-003,,Authentication,Submission state,component,Repeated submit while loading initiates one request,Authentication callback is intentionally delayed,"Submit valid-shaped data
+Immediately activate submit repeatedly
+Count service calls","{""password"": ""[REDACTED]"", ""username"": ""qa-synthetic""}",The button remains disabled while loading and only one service call is initiated.,,not_run,high,,,frontend,
+TC-LOGIN-007,FR-AUTH-005,,Authentication,Environment behavior,component,Production hides direct login controls by default,"production configuration is true
+No developer query parameter","Render LoginComponent
+Inspect direct-login and SSO controls","{""production"": true, ""query"": """"}",Direct-login controls are hidden while approved SSO entry points remain available.,,not_run,high,,,frontend,
+TC-LOGIN-008,FR-AUTH-005,RISK-AUTH-DEV-OVERRIDE,Authentication,Environment behavior,security,Developer query override follows approved production policy,Explicit authorization to evaluate alternate production auth surface,"Open production login with a truthy developer query
+Inspect visible controls
+Verify server-side restrictions independently","{""query"": ""developer=synthetic""}",Behavior matches an explicitly approved policy and cannot bypass server-side authentication controls.,,not_run,critical,,,auth-platform,Do not execute against production without technique-level authorization.
+TC-SSO-001,FR-SSO-001,,Authentication,SSO links,component,Member and parent SSO links use environment configuration,Environment configuration is loaded,"Render login page
+Inspect both SSO link destinations","{""link_types"": [""member"", ""parent""]}",Both links are present and match the approved destinations for the environment.,,not_run,high,,,frontend,
+TC-SSO-002,FR-SSO-002,,Authentication,SSO callback,e2e,Valid SSO callback authenticates and redirects,Authorized SSO sandbox and callback identity,"Complete sandbox SSO
+Return to callback route
+Observe final navigation","{""access_token"": ""[REDACTED]"", ""ttl"": ""authorized-sandbox-ttl""}",The callback is accepted once and the user reaches the approved redirect route.,,not_run,critical,,,auth-platform,
+TC-SSO-003,FR-SSO-002,,Authentication,SSO callback,e2e,Invalid or expired SSO callback is rejected safely,Authorized SSO sandbox,"Open callback with an invalid sandbox token
+Observe error and session state","{""access_token"": ""[REDACTED]"", ""ttl"": ""expired""}","Authentication is rejected, no session is established, and a safe error is displayed.",,not_run,critical,,,auth-platform,
+TC-SSO-004,FR-SSO-003,,Authentication,Login initialization,component,Opening login without a query token invokes logout once,LoginComponent is created without access_token,"Initialize the component
+Observe AuthenticationService calls","{""query"": """"}",Logout is called once and no SSO login call is made.,,not_run,high,,,frontend,Product owner must confirm the desired session UX.
+TC-SSO-005,FR-SSO-002,RISK-AUTH-URL-TOKEN,Authentication,SSO secret handling,security,Authentication secrets do not leak through browser surfaces,"Authorized sandbox token
+Evidence capture excludes real secrets","Complete a sandbox callback
+Inspect address history, referrer behavior, console, analytics, and logs
+Verify token cleanup","{""access_token"": ""[REDACTED]""}",No reusable secret is retained or disclosed beyond the approved exchange boundary.,,not_run,critical,,,auth-platform,Explicit security authorization required.
+TC-SSO-006,FR-SSO-002,RISK-AUTH-URL-TOKEN,Authentication,SSO route parsing,component,Malformed SSO callback path fails without unsafe navigation,LoginSSOComponent is isolated with a mocked auth service,"Provide missing or extra path segments
+Initialize component
+Observe service parameters and navigation","{""paths"": [""/account/loginsso"", ""/account/loginsso/member-only"", ""/account/loginsso/member/session/extra""]}",Malformed paths are rejected predictably without logging secrets or navigating to an unintended route.,,not_run,high,,,frontend,
+TC-MFA-001,FR-MFA-001,,Authentication,2FA state,component,2FA-enabled primary login shows the authenticator form,Mock primary login succeeds with enable2Fa true,"Submit valid-shaped primary credentials
+Resolve auth callback
+Inspect component state","{""enable2Fa"": true}",Direct navigation does not occur and the required authenticator form is displayed.,,not_run,critical,,,frontend,
+TC-MFA-002,FR-MFA-002,,Authentication,2FA validation,component,Empty authenticator code cannot be submitted,2FA form is visible,"Leave the code empty
+Submit the form","{""code"": ""[REDACTED]""}",The form remains invalid and verify2FA is not called.,,not_run,high,,,frontend,
+TC-MFA-003,FR-MFA-002,,Authentication,2FA verification,e2e,Valid authenticator code completes login,Authorized 2FA test account and authenticator,"Complete primary login
+Enter the current valid code
+Submit once","{""code"": ""[REDACTED]""}",Verification succeeds once and navigation reaches the approved redirect route.,,not_run,critical,,,auth-platform,
+TC-MFA-004,FR-MFA-002,,Authentication,2FA verification,api,"Wrong, expired, reused, and cross-account codes are rejected",Authorized 2FA API contract and test identities,"Submit each invalid code class within the approved rate
+Observe session and response","{""code_classes"": [""wrong"", ""expired"", ""reused"", ""other-account""]}",Every invalid class is rejected and no full session is issued.,,not_run,critical,,,auth-platform,
+TC-MFA-005,"FR-MFA-001
+FR-MFA-002",,Authentication,2FA authorization,security,Post-login resources cannot be accessed before second-factor verification,"Explicit auth-bypass testing authorization
+2FA-enabled test identity","Complete only the primary factor
+Attempt an approved protected request
+Compare after MFA success","{""role"": ""authorized-2fa-test-role""}",Pre-MFA state cannot access resources requiring full authentication.,,not_run,critical,,,auth-platform,Explicit security authorization required.
+TC-MFA-006,FR-MFA-002,,Authentication,2FA throttling,security,Repeated invalid codes are throttled according to contract,Approved attempt ceiling and disposable 2FA account,"Submit invalid codes up to the approved boundary
+Submit once beyond the boundary
+Observe recovery behavior","{""attempts"": ""contract-boundary""}",Attempts are bounded without uncontrolled account denial-of-service and recovery follows policy.,,not_run,critical,,,auth-platform,Rate and lockout policy must be supplied before execution.
+TC-REC-001,FR-REC-001,,Authentication,Password recovery,component,Forgot-password action switches from login to recovery,Login page is visible,"Activate forgot password
+Inspect visible forms and initial state",{},Login/2FA forms are replaced by the account-recovery entry state with no retained credential values.,,not_run,medium,,,frontend,
+TC-REC-002,FR-REC-001,,Authentication,Password recovery,contract,Account verification request matches the approved API contract,Recovery API contract is available,"Submit a synthetic test account
+Validate request and response schema","{""kd_member"": ""authorized-test-member""}","The request, status, response envelope, and error behavior conform to the approved contract.",,not_run,high,,,auth-platform,Blocked until contract is supplied.
+TC-REC-003,FR-REC-001,RISK-REC-ENUMERATION,Authentication,Password recovery,security,Known and unknown accounts receive enumeration-safe recovery responses,Authorized identities and comparison scope,"Request recovery for known test account
+Request recovery for unknown synthetic account
+Compare status, body, timing, and UI","{""account_classes"": [""known-test"", ""unknown-synthetic""]}",Responses do not disclose account existence beyond approved policy.,,not_run,critical,,,auth-platform,Explicit security authorization required.
+TC-REC-004,FR-REC-001,,Authentication,OTP request,e2e,Verified test account receives one sandbox OTP request,Authorized test account and WhatsApp sandbox,"Submit the test account once
+Observe loading and OTP state
+Verify sandbox delivery record","{""kd_member"": ""authorized-test-member""}","One request is recorded, loading settles, and the OTP entry state is enabled without exposing the code.",,not_run,high,,,auth-platform,
+TC-REC-005,FR-REC-002,RISK-OTP-STATE,Authentication,OTP verification,api,Valid OTP advances once and returns a scoped reset token,Authorized recovery account and current sandbox OTP,"Submit the valid code
+Observe response and UI transition
+Attempt safe reuse according to contract","{""code"": ""[REDACTED]""}","The flow advances once, a scoped token is returned securely, and reuse is rejected.",,not_run,critical,,,auth-platform,
+TC-REC-006,FR-REC-002,RISK-OTP-STATE,Authentication,OTP verification,api,"Wrong, expired, reused, and cross-account recovery codes are rejected",Authorized recovery test identities and rate ceiling,"Submit each invalid code class
+Observe response and recovery state","{""code_classes"": [""wrong"", ""expired"", ""reused"", ""other-account""]}",Every invalid class is rejected without issuing a reset token or leaking account data.,,not_run,critical,,,auth-platform,
+TC-REC-007,FR-REC-003,RISK-REC-POLICY,Authentication,Password reset,component,Mismatched password confirmation is prevented or rejected clearly,Recovery token state is reached,"Enter two different synthetic passwords
+Attempt submit","{""password"": ""[REDACTED]"", ""password_konfirmasi"": ""[REDACTED]""}",The mismatch is blocked with specific feedback and no password change occurs.,,not_run,critical,,,frontend,Current client-side match validation was not found.
+TC-REC-008,FR-REC-003,RISK-REC-POLICY,Authentication,Password reset,contract,Password policy boundaries are enforced consistently by UI and API,Approved password and reset API contract,"Submit authorized synthetic values at policy boundaries
+Compare UI and API behavior","{""character_classes"": [""unicode"", ""space"", ""common-blocked""], ""length_classes"": [""min-1"", ""min"", ""max"", ""max+1""]}",UI and API consistently enforce the approved policy without exposing password values.,,not_run,high,,,auth-platform,
+TC-REC-009,FR-REC-003,,Authentication,Password reset,security,"Reset token is account-bound, short-lived, single-use, and invalid after success",Explicit authorized token-lifecycle test scope,"Use a valid sandbox reset token once
+Attempt reuse and cross-account use
+Check boundary expiry behavior","{""token_classes"": [""valid"", ""expired"", ""reused"", ""other-account""]}",Only the valid first use succeeds; all other classes are rejected without account change.,,not_run,critical,,,auth-platform,Explicit security authorization required.
+TC-REC-010,FR-REC-003,,Authentication,Session lifecycle,security,Successful reset follows the approved session and token invalidation policy,Disposable account with approved pre-reset sessions,"Establish approved test sessions
+Complete reset
+Attempt old session/token use","{""sessions"": ""authorized-disposable-sessions""}",Old sessions/tokens are invalidated according to the approved recovery policy.,,not_run,critical,,,auth-platform,Policy is currently unknown.
+TC-STATE-001,FR-STATE-001,,Authentication,Recovery state cleanup,component,Back action clears local recovery secrets and flags,"Recovery flow contains account, OTP, token, and password state","Populate synthetic recovery state
+Activate back
+Inspect component and visible controls","{""state"": ""synthetic-populated-recovery-state""}","Recovery identifiers, OTP, token, passwords, errors, loading, and visibility return to the initial login state.",,not_run,high,,,frontend,
+TC-A11Y-001,,,Authentication,Keyboard accessibility,accessibility,"All login, SSO, 2FA, recovery, and back actions are keyboard operable",Supported desktop browser and no mouse input,"Traverse the entire flow by keyboard
+Activate every available action
+Observe focus","{""input"": ""keyboard-only""}","Interactive elements are reachable in logical order, visibly focused, and operable without a pointer.",,not_run,high,,,frontend,Accessibility target requires product confirmation.
+TC-A11Y-002,,,Authentication,Form semantics,accessibility,Inputs have programmatic names and errors are associated with fields,Accessibility tree inspection is available,"Inspect each form control name/role/state
+Trigger validation errors
+Inspect error association","{""forms"": [""login"", ""2fa"", ""recovery"", ""password-reset""]}",Every control has an unambiguous programmatic name and each error is perceivable and associated with its field.,,not_run,high,,,frontend,Placeholders alone may not satisfy the approved accessibility target.
+TC-A11Y-003,,,Authentication,Dynamic status,accessibility,"Loading, errors, success, and step transitions are announced",Screen-reader inspection is available,"Trigger loading, validation, service failure, OTP success, and reset success states
+Observe announcements and focus movement","{""states"": [""loading"", ""error"", ""success"", ""step-change""]}","Dynamic states are perceivable without relying only on color or visual position, and focus moves predictably.",,not_run,high,,,frontend,

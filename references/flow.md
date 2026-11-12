@@ -1,57 +1,46 @@
-# Flow — Langkah Detail Tiap Skill
+# QABSI Workflow
 
-## Routing (tentukan kondisi)
+## Routing
 
-1. Baca ticket/instruksi → ekstrak konteks: repo BE/FE, link Confluence API contract, target web, user testing (1/2/3), deskripsi.
-2. Tentukan kondisi:
-   - Tanpa PRD + tanpa test case → `analyze-testing`.
-   - PRD + test case ada → `testing`.
-   - Hanya PRD → `prd-generate`.
-   - Hanya test case → `test-case-generate`.
-   - Security assessment → `security-testing`.
-3. Cek destinasi (report/bug). Tak ditentukan → tanya user. Ditentukan → eksekusi.
-4. Jalankan skill yang sesuai.
+1. Read the request/ticket and extract objective, evidence sources, repository/commit, target, environment, roles, and requested outputs.
+2. Select exactly one primary mode:
+   - Missing/untrusted PRD or tests → `analyze-testing`.
+   - Trusted PRD and tests exist → `testing`.
+   - PRD only → `prd-generate`.
+   - Test cases only → `test-case-generate`.
+   - Explicitly authorized security assessment → `security-testing`.
+3. Read `execution-safety.md` before tool use. Tool availability does not imply permission.
+4. Load only relevant references/knowledge modules.
 
-## Analyze Testing
+## End-to-end analyze and test
 
-1. Baca ticket → konteks (repo, contract, web, user).
-2. `git clone` repo BE & FE.
-3. Analisa code → alur, logika, aturan, cara kerja.
-4. PRD (kalau belum ada).
-5. Test case (.md) pakai ISTQB.
-6. Buat child ticket test case (opsional).
-7. Testing: Chrome DevTools + Playwright; login SSO via `uii-gateway-login` kalau UII app.
-8. Enrich test case pakai knowledge module relevan (context-driven).
-9. Rekam video bug (screencast: `navigate` dulu → `screencast_start` → `screencast_stop`).
-10. Report → Confluence (format bebas dulu).
-11. Bug ticket → ClickUp (default), assign dari contract Consumer/Maintainer.
+1. Pin tickets/contracts/repos/commits and record unavailable sources.
+2. Reuse supplied checkouts or safely clone authorized repositories; preserve dirty work and avoid secrets.
+3. Inventory code, contracts, data, roles, states, errors, integrations, and existing tests.
+4. Build an as-is evidence-backed PRD using `prd-standard.md`.
+5. Select risk-based layers using `test-strategy.md`.
+6. Generate traceable test cases using `rules.md`.
+7. Execute authorized tests with real tools and capture sanitized evidence.
+8. Triage failures into product, test, flaky, environment, ambiguity, or limitation.
+9. Generate Markdown/CSV/XLSX and external-system drafts from the run manifest.
+10. Publish/assign only after explicit mutation authorization and deduplication.
 
-## Testing (PRD + test case ada)
+## PRD only
 
-1. Baca ticket → link contract, target web, PRD/test case.
-2. Testing detail sesuai test case; enrich knowledge module.
-3. Rekam bug → report → bug ticket + assign.
+Stop after the professional PRD quality gate. Do not execute tests or publish merely because their likely next steps are visible.
 
-## Generate PRD
+## Test-case only
 
-1. Clone repo. 2. Analisa code. 3. Tulis PRD.
+Stop with `not_run` cases, coverage/traceability, and open requirement gaps. Do not create fake actual results.
 
-## Generate Test Case
+## Security
 
-1. Sumber: PRD atau analisa kode. 2. Susun test case (ISTQB). 3. Enrich knowledge module.
+Confirm authorization and safety scope before any active probe. A clean result is scoped evidence, not a universal security guarantee.
 
-## Security Testing
+## Cross-flow invariants
 
-1. Tentukan scope (endpoint/URL + role + kontrak).
-2. Load knowledge `security/*` + `nft-security`.
-3. Jalankan checklist OWASP WSTG/ASVS.
-4. Report temuan → bug ticket.
-
-## Prinsip Lintas Flow
-
-- **Context-driven knowledge selection** — identifikasi fitur dulu, load modul relevan saja.
-- **Knowledge ≠ test case.**
-- **Expected behavior** (dari kontrak aplikasi) ≠ **recommended behavior** (dari standar industri).
-- **Prioritas berbasis risiko.**
-- **Jangan tulis DB prod. Jangan commit/push kecuali user suruh.**
-- **Assignee bug**: resolve dari contract Consumer/Maintainer, bukan tebak gender.
+- Application contract and approved requirements define expected behavior; industry guidance remains a recommendation unless adopted.
+- Every pass/fail requires executed evidence.
+- Production writes, destructive/security/high-volume tests, publication, assignment, commit, and push require explicit authorization.
+- Reports must disclose source commits, environment, limitations, untested risk, and cleanup state.
+- Resolve platform assignees from approved IDs; never infer identity or ownership from gender or names.
