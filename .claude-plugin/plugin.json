@@ -1,0 +1,18 @@
+{
+  "name": "qabsi",
+  "version": "0.1.0",
+  "description": "QA testing skill BSI UII: manual + automated testing, analisa kode ke PRD/test case, report, dan bug ticket.",
+  "author": {
+    "name": "BSI UII"
+  },
+  "license": "MIT",
+  "keywords": ["qa", "testing", "istqb", "owasp", "api-testing", "clickup", "confluence"],
+  "skills": "./skills/",
+  "hooks": {},
+  "interface": {
+    "displayName": "QABSI",
+    "shortDescription": "QA testing BSI UII",
+    "longDescription": "Skill QA testing: analyze-testing, testing, prd-generate, test-case-generate, security-testing.",
+    "category": "Developer Tools"
+  }
+}
