@@ -1,8 +1,8 @@
-# QABSI V1 Design
+# AQABSI V1 Design
 
 ## Intent
 
-QABSI turns application context, source code, requirements, and deployed behavior into a traceable QA workflow. It must help a QA engineer produce a professional evidence-backed PRD, design risk-based test cases, execute the appropriate testing layers, and prepare publication-ready artifacts without inventing requirements or mutating external systems implicitly.
+AQABSI turns application context, source code, requirements, and deployed behavior into a traceable QA workflow. It must help a QA engineer produce a professional evidence-backed PRD, design risk-based test cases, execute the appropriate testing layers, and prepare publication-ready artifacts without inventing requirements or mutating external systems implicitly.
 
 ## Goals
 
@@ -16,14 +16,14 @@ QABSI turns application context, source code, requirements, and deployed behavio
 
 ## Non-goals
 
-- QABSI does not claim exhaustive testing or zero defects.
-- QABSI does not invent business intent from implementation details.
-- QABSI does not publish, assign, push, deploy, attack, or run destructive/load tests without explicit authorization for the exact target and action.
-- QABSI does not replace PHPUnit, Playwright, contract-test, security, accessibility, or performance tools.
+- AQABSI does not claim exhaustive testing or zero defects.
+- AQABSI does not invent business intent from implementation details.
+- AQABSI does not publish, assign, push, deploy, attack, or run destructive/load tests without explicit authorization for the exact target and action.
+- AQABSI does not replace PHPUnit, Playwright, contract-test, security, accessibility, or performance tools.
 
 ## Architecture
 
-The repository becomes one self-contained `qabsi-testing` skill for Codex. Its root `SKILL.md` routes to focused workflow and reference files. Existing `skills/*/SKILL.md` entrypoints remain for Claude plugin compatibility and use the same shared references. Standard-library Python scripts validate the package and convert a test-run JSON manifest into sanitized, deterministic reporting artifacts. JSON schemas and templates define stable contracts.
+The repository becomes one self-contained `aqabsi-testing` skill for Codex. Its root `SKILL.md` routes to focused workflow and reference files. Existing `skills/*/SKILL.md` entrypoints remain for Claude plugin compatibility and use the same shared references. Standard-library Python scripts validate the package and convert a test-run JSON manifest into sanitized, deterministic reporting artifacts. JSON schemas and templates define stable contracts.
 
 ## Safety and authorization
 

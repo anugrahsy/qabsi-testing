@@ -17,6 +17,8 @@ CANONICAL_SKILL_NAME = "aqabsi-testing"
 CANONICAL_PLUGIN_NAME = "aqabsi"
 CANONICAL_DISPLAY_NAME = "AQABSI — AI QA BSI"
 CANONICAL_VERSION = "2.0.0"
+LEGACY_IDENTITY_PATTERN = re.compile(r"(?i)(?<![a-z0-9])q" + r"absi(?=$|[^a-z0-9])")
+APPROVED_LEGACY_REPOSITORY_SLUG = "anugrahsy/" + "q" + "absi-testing"
 PROTECTED_POLICY_VALUES = {
     ("data_egress", "default_classification"): "internal_restricted",
     ("data_egress", "allow_managed_external"): False,
@@ -136,6 +138,25 @@ def validate_organization_neutral_branding(root: Path) -> list[str]:
     return errors
 
 
+def validate_canonical_product_identity(root: Path) -> list[str]:
+    """Reject pre-AQABSI names while the old GitHub repository slug remains approved temporarily."""
+    errors: list[str] = []
+    ignored_parts = {".git", ".superpowers", "__pycache__"}
+    for path in root.rglob("*"):
+        if not path.is_file() or ignored_parts.intersection(path.parts):
+            continue
+        relative = path.relative_to(root)
+        if LEGACY_IDENTITY_PATTERN.search(str(relative)):
+            errors.append(f"{path}: legacy AQABSI identity is not allowed in package paths")
+        if path.suffix.lower() not in PUBLIC_TEXT_SUFFIXES:
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        text = text.replace(APPROVED_LEGACY_REPOSITORY_SLUG, "")
+        if LEGACY_IDENTITY_PATTERN.search(text):
+            errors.append(f"{path}: legacy AQABSI identity is not allowed in public content")
+    return errors
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     root_skill = root / "SKILL.md"
@@ -236,6 +257,7 @@ def validate(root: Path) -> list[str]:
 
     errors.extend(validate_registry_and_profiles(root))
     errors.extend(validate_organization_neutral_branding(root))
+    errors.extend(validate_canonical_product_identity(root))
 
     knowledge = list((root / "references" / "knowledge").glob("*/*.md"))
     if len(knowledge) < 90:

@@ -2,7 +2,7 @@ saya ingin ikut kompetisi hackaton, nah saya ingin membawa ide mengenai vibe tes
 
 bentuknya dalah, saya ingin membuat sebuah skills, dan didalam nya teridiri dari beberapa rancangan pola, flow, aturan, sturktur, kondisi, teori, dll yang bisa terdiri dari berbagai macam skill sesuai kebutuhan. namun skill utamanya adalah fitur lengkap dari flow awal hingga flow akhir. mungkin seperti superpowers.
 
-namnya skillnya /qabsi:full-testing dan lainya yang mungkin akan kamu analisa berdasarkan aturan dan flow nya.
+namanya skillnya /aqabsi:full-testing dan lainnya yang mungkin akan kamu analisis berdasarkan aturan dan flow-nya.
 
 saya bertujuan agar skill ini bisa digunakan oleh QA enginer untuk membantu melakukan testing
 

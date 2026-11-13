@@ -147,5 +147,5 @@
 
 - [x] Run `python3 scripts/validate_package.py .`, full unittests, JSON parsing, and whitespace checks.
 - [x] Run `DISABLE_TELEMETRY=1 npx --yes skills add . --list`; expect exactly `aqabsi-testing`.
-- [x] Back up any legacy global QABSI installation, install AQABSI and approved pinned third-party skills without modifying target repositories, then validate installed paths.
+- [x] Back up any pre-migration global installation, install AQABSI and approved pinned third-party skills without modifying target repositories, then validate installed paths.
 - [x] Stage only intended package files and run one final whole-change review; do not commit or push.

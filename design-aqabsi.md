@@ -1,6 +1,6 @@
-# Design Doc — QABSI (Skill QA Testing BSI UII)
+# Design Doc — AQABSI (AI QA BSI)
 
-> Historical v0.1 design. Desain v1 yang berlaku ada di `docs/superpowers/specs/2026-11-12-qabsi-v1-design.md`; jika berbeda, v1 menjadi acuan.
+> Historical v0.1 design. Desain v1 yang berlaku ada di `docs/superpowers/specs/2026-11-12-aqabsi-v1-design.md`; jika berbeda, v1 menjadi acuan.
 
 Tanggal: 2026-11-12
 Status: draft — menunggu review
@@ -9,7 +9,7 @@ Status: draft — menunggu review
 
 QA engineer butuh cara testing aplikasi web UII yang profesional dan otomatis: dari kondisi **tanpa PRD/test case sama sekali** (aplikasi lama) sampai kondisi **PRD + test case sudah ada**. Proses manual (clone repo, baca code, susun skenario, jalankan test, rekam bug, tulis report, bikin ticket) lambat dan tidak konsisten.
 
-QABSI membungkus seluruh alur itu jadi skill Claude Code, meniru pola `superpowers` (skill utama + sub-skill + references + progressive disclosure).
+AQABSI membungkus seluruh alur itu jadi skill Claude Code, meniru pola `superpowers` (skill utama + sub-skill + references + progressive disclosure).
 
 ## 2. Goals / Non-goals / Anti-goals
 
@@ -42,13 +42,13 @@ QABSI membungkus seluruh alur itu jadi skill Claude Code, meniru pola `superpowe
 
 ## 4. Skill Tree (struktur repo)
 
-Meniru superpowers: namespace `qabsi`, skill utama + sub-skill + `references/`.
-Katalog knowledge domain-based — detail di `qabsi-knowledge-taxonomy-v1.md`.
+Meniru superpowers: namespace `aqabsi`, skill utama + sub-skill + `references/`.
+Katalog knowledge domain-based — detail di `aqabsi-knowledge-taxonomy-v1.md`.
 
 ```
-qabsi/                                  # repo root — push GitHub, installable
+aqabsi/                                 # repo root — push GitHub, installable
 ├── skills/                             # flat namespace (nama skill)
-│   ├── qabsi/            SKILL.md       # dispatcher utama
+│   ├── aqabsi/           SKILL.md       # dispatcher utama
 │   ├── analyze-testing/  SKILL.md
 │   ├── qa-flow/          SKILL.md
 │   ├── create-prd/       SKILL.md
@@ -80,7 +80,7 @@ qabsi/                                  # repo root — push GitHub, installable
 
 ## 5. Flow per Skill
 
-### 5.1 `qabsi` (dispatcher)
+### 5.1 `aqabsi` (dispatcher)
 1. Baca ticket ClickUp parent (atau input user).
 2. Tentukan kondisi:
    - Tidak ada PRD + tidak ada test case → `analyze-testing`.
@@ -112,7 +112,7 @@ Input ticket berisi: repo BE, repo FE, link Confluence API contract, user testin
 
 ## 6. Knowledge Base
 
-Knowledge base = **modul pengetahuan pengujian berbasis domain** (bukan cuma validasi input). Katalog lengkap, cakupan, referensi, dan relasi antar-modul ada di **`qabsi-knowledge-taxonomy-v1.md`**.
+Knowledge base = **modul pengetahuan pengujian berbasis domain** (bukan cuma validasi input). Katalog lengkap, cakupan, referensi, dan relasi antar-modul ada di **`aqabsi-knowledge-taxonomy-v1.md`**.
 
 7 domain:
 1. **Input & Data Validation** — email, password, username, phone, number, date, text, url, file, image, array, object, enum, currency, identifier.
@@ -123,7 +123,7 @@ Knowledge base = **modul pengetahuan pengujian berbasis domain** (bukan cuma val
 6. **Data & Persistence** — crud, integrity, relationship, transaction, soft-delete, duplicate, migration, consistency, concurrency, seeding.
 7. **Non-functional** — performance, load, stress, endurance, security, accessibility, compatibility, reliability, scalability, usability.
 
-**Cara QABSI pakai knowledge** (context-driven): feature discovery → knowledge selection (load modul relevan saja) → test design → execution & report. Bukan baca semua modul.
+**Cara AQABSI pakai knowledge** (context-driven): feature discovery → knowledge selection (load modul relevan saja) → test design → execution & report. Bukan baca semua modul.
 
 **Struktur tiap modul**: Overview, When to Apply, Testing Principles, Test Design Techniques, Test Scenarios (positive/negative/boundary/integration), Test Data, Expected Results, Common Defects, Security Considerations, References.
 
@@ -142,7 +142,7 @@ Knowledge base = **modul pengetahuan pengujian berbasis domain** (bukan cuma val
 
 ## 8. Keputusan yang Diserahkan ke Builder (mark as my call)
 
-- Nama namespace: `qabsi`.
+- Nama namespace: `aqabsi`.
 - Layout repo persis (folder `skills/` + `references/`).
 - Penomoran/prefix test case & bug ticket.
 - Detail prompt tiap SKILL.md (progressive disclosure: SKILL.md ringkas, detail di references).

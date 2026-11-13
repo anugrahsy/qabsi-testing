@@ -1,6 +1,6 @@
 # AQABSI Knowledge Taxonomy v1
 
-Dokumen induk (master) — katalog taksonomi knowledge base AQABSI (nama file dipertahankan untuk kompatibilitas referensi v1).
+Dokumen induk (master) — katalog taksonomi knowledge base AQABSI.
 Tanggal: 2026-11-12
 Status: v1 — draft untuk review
 
@@ -11,7 +11,7 @@ Dokumen ini mendefinisikan **AQABSI Knowledge Base**: kumpulan modul pengetahuan
 Tujuan:
 - Menjadi **index/taksonomi induk** sebelum modul ditulis satu per satu.
 - Menentukan cakupan, referensi, dan relasi antar-modul.
-- Menjadi acuan `design-qabsi.md` dan `references/knowledge/`.
+- Menjadi acuan `design-aqabsi.md` dan `references/knowledge/`.
 
 Bukan sekadar daftar validasi input. Cakupan = seluruh jenis perilaku sistem yang perlu diuji.
 

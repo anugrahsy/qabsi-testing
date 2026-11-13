@@ -70,9 +70,43 @@ class ValidatePackageTest(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("team-specific branding", result.stderr)
 
+    def test_validator_rejects_legacy_product_name_in_file_name(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "package"
+            shutil.copytree(
+                ROOT,
+                root,
+                ignore=shutil.ignore_patterns(".git", ".superpowers", "__pycache__", "*.pyc"),
+            )
+            legacy_name = "q" + "absi"
+            (root / f"legacy-{legacy_name}.md").write_text("# Legacy package file\n")
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("legacy AQABSI identity", result.stderr)
+
+    def test_validator_rejects_legacy_product_name_in_public_content(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "package"
+            shutil.copytree(
+                ROOT,
+                root,
+                ignore=shutil.ignore_patterns(".git", ".superpowers", "__pycache__", "*.pyc"),
+            )
+            legacy_name = ("q" + "absi").upper()
+            readme = root / "references" / "flow.md"
+            readme.write_text(readme.read_text() + f"\nLegacy product label: {legacy_name}.\n")
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("legacy AQABSI identity", result.stderr)
+
     def test_metadata_mismatch_is_rejected_by_validator(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
+            legacy_name = "q" + "absi"
             (root / "agents").mkdir()
             (root / ".claude-plugin").mkdir()
             (root / "references" / "knowledge").mkdir(parents=True)
@@ -81,12 +115,18 @@ class ValidatePackageTest(unittest.TestCase):
                 "# AQABSI — AI QA BSI\n"
             )
             (root / "agents" / "openai.yaml").write_text(
-                'interface:\n  display_name: "Wrong"\n  default_prompt: "Use $qabsi-testing."\n'
+                f'interface:\n  display_name: "Wrong"\n  default_prompt: "Use ${legacy_name}-testing."\n'
             )
             (root / ".claude-plugin" / "plugin.json").write_text(
-                json.dumps({"name": "qabsi", "version": "1.0.0", "interface": {"displayName": "QABSI"}})
+                json.dumps(
+                    {
+                        "name": legacy_name,
+                        "version": "1.0.0",
+                        "interface": {"displayName": legacy_name.upper()},
+                    }
+                )
             )
-            (root / ".gitignore").write_text(".qabsi-output/\n")
+            (root / ".gitignore").write_text(f".{legacy_name}-output/\n")
 
             result = self.run_validator(root)
 

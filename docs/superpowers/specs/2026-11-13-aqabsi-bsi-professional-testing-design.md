@@ -85,7 +85,7 @@ Until BSI supplies organization-specific policy, use these safe defaults:
 - BSI source, prompts containing source, runtime evidence, findings, identities, and internal URLs have `internal_restricted` classification and cannot leave BSI-managed infrastructure. ClickUp drafts may contain sanitized metadata only.
 - Managed Strix and remote agentic E2E model calls are disabled. Local exact-locator E2E remains available; a later approved internal model endpoint may enable agentic steps.
 - An authorization record requires approver identity, authority reference, target allowlist, environment, techniques, accounts/roles, rate ceiling, data/cleanup rules, start/expiry, and revocation/stop contact. With no approved authority registry, adapters fail closed.
-- Existing QABSI v1 manifests, CLI arguments, and artifact columns remain input-compatible during the AQABSI migration. New fields are optional in v1-compatible input; breaking changes require a new schema version and migration fixture.
+- Existing AQABSI v1 manifests, CLI arguments, and artifact columns remain input-compatible during the AQABSI migration. New fields are optional in v1-compatible input; breaking changes require a new schema version and migration fixture.
 - A PRD field that is irrelevant is explicitly `not_applicable` with rationale and reviewer, never silently omitted by the quality engine.
 - Security output records CVSS 4.0 vector/score when enough evidence exists, plus a separate configurable BSI business-impact priority. Until BSI supplies its matrix and SLAs, the latter remains `unmapped` and does not fabricate a due date.
 - The CRUD pilot uses a sanitized synthetic BSI-style service/endpoint resource, not private source excerpts or business data. A real module can replace it only when an approved public-safe source is selected.
@@ -95,7 +95,7 @@ Until BSI supplies organization-specific policy, use these safe defaults:
 
 - The canonical installed skill name becomes `aqabsi-testing`, the display name becomes **AQABSI**, and the Claude/plugin namespace becomes `aqabsi:`.
 - AQABSI is the official abbreviation of **AI QA BSI**. Use that expansion consistently in public documentation and interface metadata.
-- The old `qabsi-testing` installation is backed up and retired after the new package passes validation, preventing two auto-invoked copies from competing. Existing v1 input files remain supported by AQABSI.
+- The pre-migration installation is backed up and retired after the canonical package passes validation, preventing two auto-invoked copies from competing. Existing v1 input files remain supported by AQABSI.
 - Configuration has three explicit layers: organization policy → team profile → project profile. Lower layers may supply concrete routes, commands, owners, and thresholds but cannot weaken organization safety or data-egress policy.
 - Project-specific conventions live only in selected project profiles. They are never embedded as defaults in the core router.
 

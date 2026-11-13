@@ -4,7 +4,7 @@
 
 AQABSI dirancang untuk seluruh lingkungan BSI UII. Core-nya stack-agnostic dan dapat digunakan oleh tim frontend, backend, QA, security, data, platform, serta product tanpa mengutamakan unit, aplikasi, framework, atau pola arsitektur tertentu.
 
-> Status package lokal: identitas kanonis sudah `aqabsi-testing` dengan namespace plugin `aqabsi:`. Input dan kolom artifact QABSI v1 tetap kompatibel. Live connector BSI tetap membutuhkan URL, deployment type, credential, ID destination, ownership registry, dan otorisasi yang benar.
+> Status package lokal: identitas kanonis sudah `aqabsi-testing` dengan namespace plugin `aqabsi:`. Input dan kolom artifact AQABSI v1 tetap kompatibel. Live connector BSI tetap membutuhkan URL, deployment type, credential, ID destination, ownership registry, dan otorisasi yang benar.
 
 ## Quick install
 
@@ -433,7 +433,7 @@ AQABSI_BACKUP="$AQABSI_SKILLS_DIR/aqabsi-testing.backup-$(date +%Y%m%d-%H%M%S)"
 mv "$AQABSI_DEST" "$AQABSI_BACKUP"
 ```
 
-Setelah backup dibuat, jalankan kembali langkah instalasi dan verifikasi. Saat migrasi dari QABSI v1, jangan menonaktifkan instalasi `qabsi-testing` sebelum `aqabsi-testing` lulus seluruh validator dan pilot.
+Setelah backup dibuat, jalankan kembali langkah instalasi dan verifikasi. Saat migrasi dari instalasi versi pra-AQABSI, jangan menonaktifkan instalasi lama sebelum `aqabsi-testing` lulus seluruh validator dan pilot.
 
 ### Claude Code/plugin manual
 

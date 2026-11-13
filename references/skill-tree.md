@@ -41,7 +41,7 @@ Root router memilih salah satu mode di atas dan selalu menerapkan `execution-saf
 
 - `input/` (15) · `api/` (24) · `ui/` (15) · `security/` (11) · `business/` (11) · `data/` (10) · `non-functional/` (10).
 
-Katalog lengkap + cakupan + relasi: `../qabsi-knowledge-taxonomy-v1.md`.
+Katalog lengkap + cakupan + relasi: `../aqabsi-knowledge-taxonomy-v1.md`.
 
 ## Cara Pakai Knowledge (context-driven)
 
