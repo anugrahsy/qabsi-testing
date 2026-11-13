@@ -2,7 +2,7 @@
 name: aqabsi-testing
 description: Plan and execute evidence-backed QA for web apps, APIs, services, and data systems, including professional source-derived PRDs, traceable test cases, authorized testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for AQABSI or AI QA BSI workflows; do not publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
 metadata:
-  version: "2.0.0"
+  version: "2.1.0"
   organization: "BSI UII"
 ---
 
@@ -24,7 +24,21 @@ For every mode, read `references/execution-safety.md` first. Then read only the 
 
 ## Mandatory preflight
 
-Before execution, establish:
+At the start of every AQABSI workflow, resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`, then run the offline integration check before source discovery:
+
+```bash
+(cd "$AQABSI_SKILL_ROOT" && python3 scripts/check_integrations.py --json)
+```
+
+Interpret the result immediately:
+
+- Exit `0`: configuration is complete offline. Use `--verify` only when read-only provider verification is relevant and network access is authorized.
+- Exit `2`: tell the user which exact environment variable names are missing, include the returned official setup links, and continue local analysis/testing/draft generation. Block only the affected live publication.
+- Exit `3` or `4`: report invalid configuration or provider verification failure without printing secret values. Continue work that does not need that provider.
+
+Never request a token value in chat. Direct the user to an approved secret manager or environment injection method and the names-only template at `assets/templates/integrations.env.example`.
+
+Before execution, also establish:
 
 1. Objective, feature/module, acceptance source, and explicit out-of-scope items.
 2. Repositories/commits, target URL/API, environment class, and allowed test identities.
@@ -48,6 +62,7 @@ Only executed, observed checks may receive `pass` or `fail`. Use `blocked`, `ski
 
 ## Core workflow
 
+0. Run the mandatory integration preflight above and communicate missing setup before beginning the long workflow.
 1. Build a source inventory: ticket, PRD, API contract, repository paths, routes, validation, services, data model, UI, roles, and deployed target.
 2. Create or reconcile the PRD using `references/prd-standard.md`; do not turn implementation defects into requirements.
 3. Select testing layers with `references/test-strategy.md` and the indexes in `references/testing-module-*.md`.
@@ -60,7 +75,7 @@ Only executed, observed checks may receive `pass` or `fail`. Use `blocked`, `ski
    python3 scripts/generate_artifacts.py run.json artifacts/
    ```
 
-8. Review sanitized drafts. Publish to Confluence or create/update ClickUp tasks only after explicit authorization for those mutations and resolved platform IDs.
+8. Review the sanitized publication plan with `scripts/publish_artifacts.py` in its default dry-run mode. Publish to Confluence or create/update ClickUp tasks only after explicit authorization for those mutations and resolved platform IDs.
 
 ## Testing breadth
 

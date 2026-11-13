@@ -4,7 +4,7 @@
 
 AQABSI dirancang untuk seluruh lingkungan BSI UII. Core-nya stack-agnostic dan dapat digunakan oleh tim frontend, backend, QA, security, data, platform, serta product tanpa mengutamakan unit, aplikasi, framework, atau pola arsitektur tertentu.
 
-> Status package lokal: identitas kanonis sudah `aqabsi-testing` dengan namespace plugin `aqabsi:`. Input dan kolom artifact AQABSI v1 tetap kompatibel. Live connector BSI tetap membutuhkan URL, deployment type, credential, ID destination, ownership registry, dan otorisasi yang benar.
+> Status package lokal: identitas kanonis sudah `aqabsi-testing` dengan namespace plugin `aqabsi:`. Input dan kolom artifact AQABSI v1 tetap kompatibel. AQABSI 2.1 menyediakan preflight integrasi dan publisher Confluence/ClickUp yang aman; koneksi live tetap membutuhkan konfigurasi organisasi, credential melalui secret channel, destination ID, ownership registry, dan otorisasi mutasi yang benar.
 
 ## Quick install
 
@@ -16,6 +16,33 @@ DISABLE_TELEMETRY=1 npx skills add anugrahsy/qabsi-testing
 
 Pilih root skill `aqabsi-testing`. Untuk instalasi global tambahkan `-g`; untuk melihat skill yang ditemukan tanpa memasang gunakan `--list`.
 
+## Pemakaian pertama: cek koneksi sebelum testing
+
+Skill akan menjalankan preflight ini otomatis pada awal workflow. Pengguna terminal juga dapat menjalankannya dari root package:
+
+```bash
+python3 scripts/check_integrations.py --json
+```
+
+Preflight default hanya membaca nama environment variable dan **tidak menghubungi Confluence atau ClickUp**. Hasil `missing` akan menyebutkan konfigurasi yang belum tersedia sebelum testing panjang dimulai. Kondisi ini tidak menghentikan analisis source, pembuatan PRD/test case, eksekusi test yang sudah diotorisasi, spreadsheet, atau draft lokal; hanya publikasi live pada provider tersebut yang diblokir.
+
+Gunakan [`assets/templates/integrations.env.example`](assets/templates/integrations.env.example) sebagai daftar nama konfigurasi. Template sengaja tidak berisi token. Nilai asli harus diberikan melalui secret manager atau process environment yang disetujui dan tidak boleh ditempel di chat atau di-commit.
+
+Konfigurasi minimal:
+
+- Confluence Cloud: deployment, base URL, email, [API token Atlassian](https://id.atlassian.com/manage-profile/security/api-tokens), dan Space ID.
+- Confluence Data Center: deployment, base URL, PAT yang diterbitkan deployment internal, dan Space key.
+- ClickUp: auth mode, [personal API token ClickUp](https://app.clickup.com/settings/apps) atau OAuth access token, Workspace ID, dan List ID.
+- Assignment: ownership registry yang sudah direview dan berisi platform user ID, bukan credential.
+
+Setelah environment disiapkan, verifikasi akun dan destination dengan request read-only:
+
+```bash
+python3 scripts/check_integrations.py --verify --json
+```
+
+Credential yang valid tidak berarti AI boleh langsung publish. AQABSI tetap membuat draft, menampilkan rencana mutasi tanpa jaringan, lalu membutuhkan otorisasi eksplisit sebelum menjalankan publisher live.
+
 ## Tersedia sekarang dan batasannya
 
 | Tersedia di package | Memerlukan konfigurasi/otorisasi lanjutan |
@@ -23,7 +50,8 @@ Pilih root skill `aqabsi-testing`. Untuk instalasi global tambahkan `-g`; untuk 
 | PRD adaptif berbasis evidence dengan deterministic quality gate | Klarifikasi dan approval business owner untuk mengubah draft menjadi requirement resmi |
 | Registry modul login, authorization, GET/POST/PUT/PATCH/DELETE, data, web, security, dan non-functional | Detection terhadap repository nyata dan pemilihan command/path yang sudah diverifikasi |
 | Profil Angular, React/Next, Vue/Nuxt, Laravel, Lumen, Go, Java/Spring, .NET, Node, Python, dan custom | Runner/dependency masing-masing project atau isolated harness |
-| Test-run validator, redaction, CSV, workbook tiga sheet, Markdown, Confluence draft, dan ClickUp draft | Live publication/assignment ke Confluence BSI dan ClickUp |
+| Test-run validator, redaction, CSV, workbook tiga sheet, Markdown, Confluence draft, dan ClickUp draft | Credential/destination organisasi untuk publikasi live |
+| Offline preflight, read-only connection verification, serta gated Confluence/ClickUp publisher | Otorisasi mutasi eksplisit dan platform user ID untuk assignment |
 | Security finding schema, access-control matrix, Cloudflare/Strix contracts, dan CI dry-run template | Scan aktif, pentest, Docker/model budget, target/account/rate/window yang diotorisasi |
 | Login design pilot dan synthetic CRUD forward-test pilot | Runtime target dan akun uji agar kasus dapat berubah dari `not_run` |
 
@@ -235,6 +263,7 @@ AQABSI menggunakan integrasi E2E web pada runner terpisah agar tidak memaksa dep
 ### Confluence BSI
 
 - Output default adalah payload lokal `dry_run`.
+- Preflight mendukung Confluence Cloud dan Data Center tanpa menyimpan token.
 - Publication mencari AQABSI run ID terlebih dahulu agar create/update idempotent.
 - Hanya content dan attachment yang telah disanitasi yang dapat dipublikasikan.
 
@@ -244,6 +273,20 @@ AQABSI menggunakan integrasi E2E web pada runner terpisah agar tidak memaksa dep
 - Fingerprint digunakan untuk mencegah task duplikat.
 - Assignee harus berasal dari ownership registry berisi platform user ID.
 - `blocked`, `not_run`, `flaky`, dan `environment_error` tidak disamarkan sebagai product defect.
+
+### Review dan publikasi
+
+Tampilkan rencana publikasi terlebih dahulu; perintah ini tidak melakukan request jaringan:
+
+```bash
+python3 scripts/publish_artifacts.py \
+  --confluence-draft .aqabsi-output/confluence-draft.json \
+  --clickup-draft .aqabsi-output/clickup-drafts.json
+```
+
+Sesudah draft, destination, deduplikasi, assignee, dan sanitasi disetujui, jalankan satu provider dengan `--execute`, `--authorization-reference`, dan file receipt. Contoh lengkap tersedia di [`references/integrations.md`](references/integrations.md). Publisher tidak otomatis retry write; receipt mempertahankan external ID yang sudah berhasil agar partial failure tidak menghasilkan duplikasi.
+
+Publisher melakukan verifikasi read-only ulang tepat sebelum write dan menolak destination yang tidak cocok. Jalankan satu proses publisher per run/destination; versi ini tidak mengklaim perlindungan race lintas dua proses yang berjalan bersamaan sebelum indeks provider konsisten.
 
 ## Skill dan mode
 
@@ -470,18 +513,20 @@ Tersedia dan tervalidasi di package lokal:
 - secret redaction;
 - package validator dan automated tests;
 - login forward-test pilot.
-- identitas AQABSI 2.0.0 dan invariant metadata;
+- identitas AQABSI 2.1.0 dan invariant metadata;
 - adaptive professional PRD/test-case quality engine;
 - machine-readable module registry dan layered BSI profiles;
 - web-only E2E contract dan GitLab CI dry-run template;
 - Cloudflare/Strix provenance lock dan security adapter contract;
 - access-control/security reporting ke workbook, Confluence draft, dan eligible ClickUp draft;
 - synthetic CRUD pilot.
+- offline integration preflight dan read-only verification untuk Confluence/ClickUp;
+- gated publisher dengan Confluence create/update, ClickUp fingerprint deduplication, serta partial-failure receipt.
 
 Masih memerlukan akses/configuration organisasi:
 
-- verifikasi base URL, deployment type, auth mode, internal CA, space/list/folder IDs, dan ownership registry;
-- live GitLab/Confluence/ClickUp connector pada destination non-production;
+- konfigurasi base URL, deployment type, auth mode, internal CA, space/list/folder IDs, credential, dan ownership registry milik organisasi;
+- live GitLab connector dan verifikasi publisher Confluence/ClickUp pada destination non-production yang disetujui;
 - runtime execution dengan target, akun, data, cleanup, dan authority yang disetujui;
 - active security scan atau pentest dalam sandbox/target yang diotorisasi;
 - release/tag resmi dan publish ke remote repository.

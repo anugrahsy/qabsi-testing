@@ -16,7 +16,7 @@ BANNED_OPERATIONAL_PLACEHOLDERS = ("template menyusul", "format bebas dulu")
 CANONICAL_SKILL_NAME = "aqabsi-testing"
 CANONICAL_PLUGIN_NAME = "aqabsi"
 CANONICAL_DISPLAY_NAME = "AQABSI — AI QA BSI"
-CANONICAL_VERSION = "2.0.0"
+CANONICAL_VERSION = "2.1.0"
 LEGACY_IDENTITY_PATTERN = re.compile(r"(?i)(?<![a-z0-9])q" + r"absi(?=$|[^a-z0-9])")
 APPROVED_LEGACY_REPOSITORY_SLUG = "anugrahsy/" + "q" + "absi-testing"
 PROTECTED_POLICY_VALUES = {
@@ -30,6 +30,18 @@ PROTECTED_POLICY_VALUES = {
 }
 MISSING = object()
 PUBLIC_TEXT_SUFFIXES = {".md", ".json", ".yaml", ".yml", ".py"}
+INTEGRATION_TEMPLATE = Path("assets/templates/integrations.env.example")
+INTEGRATION_SECRET_VARIABLES = {
+    "AQABSI_CONFLUENCE_API_TOKEN",
+    "AQABSI_CONFLUENCE_PAT",
+    "AQABSI_CLICKUP_API_TOKEN",
+}
+REQUIRED_INTEGRATION_SCRIPTS = {
+    "scripts/check_integrations.py",
+    "scripts/publish_artifacts.py",
+}
+PREFLIGHT_COMMAND = "python3 scripts/check_integrations.py --json"
+SOURCE_DISCOVERY_MARKER = "Build a source inventory"
 
 
 def parse_frontmatter(path: Path) -> tuple[str, str]:
@@ -157,6 +169,52 @@ def validate_canonical_product_identity(root: Path) -> list[str]:
     return errors
 
 
+def validate_integration_onboarding(root: Path) -> list[str]:
+    errors: list[str] = []
+    for relative in sorted(REQUIRED_INTEGRATION_SCRIPTS):
+        if not (root / relative).is_file():
+            errors.append(f"{root / relative}: required integration script is missing")
+
+    template = root / INTEGRATION_TEMPLATE
+    if not template.is_file():
+        errors.append(f"{template}: names-only integration template is required")
+    else:
+        values: dict[str, str] = {}
+        for line_number, raw_line in enumerate(
+            template.read_text(encoding="utf-8").splitlines(), start=1
+        ):
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                errors.append(f"{template}:{line_number}: expected NAME=value syntax")
+                continue
+            name, value = line.split("=", 1)
+            values[name.strip()] = value.strip()
+        for name in sorted(INTEGRATION_SECRET_VARIABLES):
+            if name not in values:
+                errors.append(f"{template}: required secret variable {name} is missing")
+            elif values[name]:
+                errors.append(
+                    f"{template}: secret variable must not contain a value: {name}"
+                )
+
+    skill = root / "SKILL.md"
+    if skill.is_file():
+        text = skill.read_text(encoding="utf-8")
+        command_index = text.find(PREFLIGHT_COMMAND)
+        discovery_index = text.find(SOURCE_DISCOVERY_MARKER)
+        if (
+            command_index < 0
+            or discovery_index < 0
+            or command_index > discovery_index
+        ):
+            errors.append(
+                f"{skill}: must route through integration preflight before source discovery"
+            )
+    return errors
+
+
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
     root_skill = root / "SKILL.md"
@@ -258,6 +316,7 @@ def validate(root: Path) -> list[str]:
     errors.extend(validate_registry_and_profiles(root))
     errors.extend(validate_organization_neutral_branding(root))
     errors.extend(validate_canonical_product_identity(root))
+    errors.extend(validate_integration_onboarding(root))
 
     knowledge = list((root / "references" / "knowledge").glob("*/*.md"))
     if len(knowledge) < 90:

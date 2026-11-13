@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -36,9 +37,95 @@ class ValidatePackageTest(unittest.TestCase):
         self.assertIn("AQABSI — AI QA BSI", skill)
         self.assertIn("$aqabsi-testing", openai)
         self.assertEqual(plugin["name"], "aqabsi")
-        self.assertEqual(plugin["version"], "2.0.0")
+        self.assertEqual(plugin["version"], "2.1.0")
         self.assertEqual(plugin["interface"]["displayName"], "AQABSI — AI QA BSI")
         self.assertIn(".aqabsi-output/", ignored)
+
+    def test_first_use_preflight_reports_exact_missing_configuration(self):
+        env = {
+            key: value
+            for key, value in os.environ.items()
+            if not key.startswith("AQABSI_CONFLUENCE_")
+            and not key.startswith("AQABSI_CLICKUP_")
+        }
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts" / "check_integrations.py"), "--json"],
+            cwd=ROOT,
+            env=env,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        self.assertEqual(result.returncode, 2, result.stderr)
+        payload = json.loads(result.stdout)
+        self.assertEqual(payload["providers"]["confluence"]["status"], "missing")
+        self.assertEqual(payload["providers"]["clickup"]["status"], "missing")
+        self.assertIn(
+            "AQABSI_CONFLUENCE_DEPLOYMENT",
+            payload["providers"]["confluence"]["missing"],
+        )
+        self.assertIn(
+            "AQABSI_CLICKUP_API_TOKEN",
+            payload["providers"]["clickup"]["missing"],
+        )
+
+    def test_integration_template_contains_names_only_and_no_secret_values(self):
+        template = ROOT / "assets" / "templates" / "integrations.env.example"
+        values = {}
+        for raw_line in template.read_text().splitlines():
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            name, value = line.split("=", 1)
+            values[name] = value
+
+        self.assertEqual(values["AQABSI_CONFLUENCE_API_TOKEN"], "")
+        self.assertEqual(values["AQABSI_CONFLUENCE_PAT"], "")
+        self.assertEqual(values["AQABSI_CLICKUP_API_TOKEN"], "")
+        self.assertEqual(values["AQABSI_CLICKUP_AUTH_MODE"], "personal")
+
+    def test_validator_rejects_secret_valued_integration_template(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "package"
+            shutil.copytree(
+                ROOT,
+                root,
+                ignore=shutil.ignore_patterns(".git", ".superpowers", "__pycache__", "*.pyc"),
+            )
+            template = root / "assets" / "templates" / "integrations.env.example"
+            template.write_text(
+                template.read_text().replace(
+                    "AQABSI_CLICKUP_API_TOKEN=",
+                    "AQABSI_CLICKUP_API_TOKEN=secret-value",
+                )
+            )
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("secret variable must not contain a value", result.stderr)
+
+    def test_validator_requires_preflight_before_source_discovery(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "package"
+            shutil.copytree(
+                ROOT,
+                root,
+                ignore=shutil.ignore_patterns(".git", ".superpowers", "__pycache__", "*.pyc"),
+            )
+            skill = root / "SKILL.md"
+            skill.write_text(
+                skill.read_text().replace(
+                    "python3 scripts/check_integrations.py --json",
+                    "preflight intentionally removed",
+                )
+            )
+
+            result = self.run_validator(root)
+
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("integration preflight before source discovery", result.stderr)
 
     def test_public_package_contains_no_team_specific_branding(self):
         team_code = "e" + "a"

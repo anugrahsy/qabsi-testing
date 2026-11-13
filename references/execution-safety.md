@@ -29,4 +29,6 @@ Stop the affected test when scope is unclear, authorization is missing, secrets 
 
 ## External mutation gate
 
-Before publishing to Confluence or creating/updating/assigning ClickUp work, present the sanitized draft, destination, exact mutation, deduplication result, and resolved platform identities. Execute only the authorized mutation; a destination mentioned in a ticket is context, not unlimited authority.
+At the start of every AQABSI workflow, run `python3 scripts/check_integrations.py --json` from the package root. Missing provider setup blocks only live publication. It does not block read-only analysis, authorized testing, or local draft generation. Never ask for token values in chat; report only missing variable names and direct the user to an approved secret-delivery channel.
+
+Before publishing to Confluence or creating/updating/assigning ClickUp work, run the publisher without `--execute` and present the sanitized draft, destination, exact mutation, deduplication result, and resolved platform identities. Execute only the authorized mutation with a non-secret authorization reference; a destination mentioned in a ticket is context, not unlimited authority. Credential presence is never publication authority.
