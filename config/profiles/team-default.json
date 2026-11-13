@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0",
+  "id": "team-default",
+  "layer": "team",
+  "inherits": "organization-bsi",
+  "selected_stack_profiles": [],
+  "policy_overrides": {},
+  "commands": {},
+  "paths": {},
+  "notes": ["Select only detected stacks and verified project commands."]
+}

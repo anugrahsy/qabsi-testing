@@ -1,6 +1,6 @@
-# GitLab CI Orchestration
+# AQABSI GitLab CI Orchestration
 
-QABSI plans and reports testing; deterministic runners perform it. A practical GitLab flow is:
+AQABSI plans and reports testing; deterministic runners perform it. A practical GitLab flow is:
 
 ```text
 Merge request or scheduled pipeline
@@ -22,4 +22,4 @@ Merge request or scheduled pipeline
 - Protect credentials with masked CI variables; do not echo them or store them in artifacts.
 - Preserve runner exit codes separately from test verdicts so environment failures are not product failures.
 
-Use `assets/templates/gitlab-ci.qabsi.example.yml` as a blueprint. Adapt runner images, commands, and dependencies to the actual repositories; never paste placeholder commands into a live pipeline unchanged.
+Use `assets/templates/gitlab-ci.aqabsi-web-security.example.yml` for the isolated web/security dry-run boundary and `assets/templates/gitlab-ci.qabsi.example.yml` only as a legacy v1 compatibility blueprint. Resolve the merge-request target SHA from GitLab-provided variables, keep telemetry disabled, use a verified internal CA bundle, and check runner completion/budget so a partial scanner run cannot fail open. Adapt commands and dependencies to the actual repository; never paste placeholder commands into a live pipeline unchanged.

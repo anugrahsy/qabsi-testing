@@ -1,4 +1,4 @@
-# Professional PRD Standard
+# AQABSI Professional PRD Standard
 
 Use this standard when a PRD is missing, incomplete, contradicted by implementation, or explicitly requested. A PRD derived from code is an **as-is technical reconstruction**, not automatic proof of intended business behavior.
 
@@ -15,7 +15,15 @@ Prefer approved business requirements and contracts over implementation. Record 
 
 For every material requirement, record `evidence_type`, `source`, and confidence (`high`, `medium`, `low`). Never fabricate missing actors, fields, limits, roles, metrics, status codes, or business rules.
 
-## Required sections
+## Adaptive composition, mandatory quality
+
+AQABSI does not force every team or feature into one fixed PRD layout. Select a `prd_profile` and compose sections from the evidence, change type, risk, interfaces, actors, and review needs. A UI-only change, API contract change, data migration, authentication flow, and cross-service initiative should not have identical section weight or order.
+
+What is mandatory is the professional quality contract: document control, evidence-backed and testable requirements, explicit scope boundary, relevant actors/authorization, observable acceptance/error behavior, risks/decisions, release evidence, and end-to-end traceability. A section may be `not_applicable` only with rationale and reviewer. Teams may add domain sections through `adaptive_sections`; the validator evaluates their claims and traceability rather than their position in a template.
+
+## Professional section library
+
+Choose relevant sections; preserve the mandatory quality outcomes above.
 
 1. **Document control** — title, version, status, owner, reviewers, date, source commits, target environment.
 2. **Executive summary** — problem, users, value, and measurable outcome.
@@ -54,3 +62,14 @@ Acceptance criteria must describe observable outcomes, including relevant invali
 8. Run the traceability and contradiction checks before delivery.
 
 Use `assets/templates/prd-template.md` as the output skeleton and `schemas/prd.schema.json` when a machine-readable PRD is required.
+
+## Deterministic review gate
+
+Run `python3 scripts/validate_quality.py prd.json --kind prd` before calling a draft review-ready. The gate checks source linkage, observable acceptance criteria, and requirement traceability. Its verdicts are:
+
+- `review_ready`: deterministic gates pass; human business, technical, and QA review is still required.
+- `needs_business_input`: intent, owner, policy, or approval is unresolved.
+- `needs_technical_evidence`: a requirement lacks a reliable contract/source.
+- `draft_incomplete`: structural or testability gates fail.
+
+A field that is irrelevant is recorded as `not_applicable` with rationale and reviewer. Never omit it silently or use a numeric score to override a failed mandatory gate.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate deterministic, sanitized QABSI reporting artifacts from a run manifest."""
+"""Generate deterministic, sanitized AQABSI reporting artifacts from a run manifest."""
 
 from __future__ import annotations
 
@@ -95,6 +95,30 @@ def validate_manifest(data: Any) -> dict[str, Any]:
     _require(data["source"], "commit_sha", "manifest.source")
     if not isinstance(data["test_cases"], list):
         raise ManifestError("manifest.test_cases must be an array")
+    for optional_list in ("access_control_matrix", "security_findings"):
+        if optional_list in data and not isinstance(data[optional_list], list):
+            raise ManifestError(f"manifest.{optional_list} must be an array")
+    for index, finding in enumerate(data.get("security_findings", [])):
+        context = f"manifest.security_findings[{index}]"
+        if not isinstance(finding, dict):
+            raise ManifestError(f"{context} must be an object")
+        for key in ("id", "title", "classification", "source_engine", "target", "business_priority", "evidence", "reproduction", "authorization", "data_classification", "clickup_eligible"):
+            if key not in finding:
+                raise ManifestError(f"{context}.{key} is required")
+        if type(finding["clickup_eligible"]) is not bool:
+            raise ManifestError(f"{context}.clickup_eligible must be a boolean")
+        if finding["classification"] == "confirmed" and finding["clickup_eligible"]:
+            for key in ("expected_result", "actual_result", "error_location"):
+                value = finding.get(key)
+                if not isinstance(value, str) or not value.strip():
+                    raise ManifestError(f"{context}.{key} is required for ClickUp-eligible confirmed findings")
+            for key in ("evidence", "reproduction"):
+                values = finding.get(key)
+                if not isinstance(values, list) or not values or not all(isinstance(item, str) and item.strip() for item in values):
+                    raise ManifestError(f"{context}.{key} requires nonblank entries for ClickUp-eligible confirmed findings")
+            authorization = finding.get("authorization")
+            if not isinstance(authorization, dict) or not isinstance(authorization.get("authority_reference"), str) or not authorization["authority_reference"].strip():
+                raise ManifestError(f"{context}.authorization.authority_reference is required for ClickUp-eligible confirmed findings")
 
     ids: set[str] = set()
     required_case_fields = (
@@ -265,6 +289,58 @@ def build_markdown(data: dict[str, Any]) -> str:
                 )
             ) + " |"
         )
+    access_rows = data.get("access_control_matrix") or []
+    lines.extend(["", "## Access-control matrix", ""])
+    if access_rows:
+        lines.extend(
+            [
+                "| Role | Action | Resource | Expected | Actual | Status | Test case | Error location |",
+                "|---|---|---|---|---|---|---|---|",
+            ]
+        )
+        for row in access_rows:
+            clean = lambda text: str(text or "—").replace("|", "\\|").replace("\n", "<br>")
+            lines.append(
+                "| "
+                + " | ".join(
+                    clean(row.get(key))
+                    for key in ("role", "action", "resource", "expected", "actual", "status", "test_case_id", "error_location")
+                )
+                + " |"
+            )
+    else:
+        lines.append("No access-control matrix was recorded for this run.")
+
+    security_findings = data.get("security_findings") or []
+    lines.extend(["", "## Security and access-control findings", ""])
+    if security_findings:
+        lines.extend(
+            [
+                "| ID | Classification | Finding | Target | Expected | Actual | Error location | Evidence |",
+                "|---|---|---|---|---|---|---|---|",
+            ]
+        )
+        for finding in security_findings:
+            clean = lambda text: str(text or "—").replace("|", "\\|").replace("\n", "<br>")
+            lines.append(
+                "| "
+                + " | ".join(
+                    clean(value)
+                    for value in (
+                        finding.get("id"),
+                        finding.get("classification"),
+                        finding.get("title"),
+                        finding.get("target"),
+                        finding.get("expected_result"),
+                        finding.get("actual_result"),
+                        finding.get("error_location"),
+                        ", ".join(finding.get("evidence", [])),
+                    )
+                )
+                + " |"
+            )
+    else:
+        lines.append("No normalized security finding was recorded for this run.")
     lines.extend(["", "## Limitations", ""])
     limitations = data.get("limitations") or ["No limitations were recorded."]
     lines.extend(f"- {item}" for item in limitations)
@@ -301,35 +377,74 @@ def _zip_write(archive: zipfile.ZipFile, name: str, content: str) -> None:
     archive.writestr(info, content.encode("utf-8"))
 
 
-def write_xlsx(path: Path, cases: list[dict[str, Any]]) -> None:
-    rows = [list(CSV_COLUMNS)] + [[case_to_row(case)[column] for column in CSV_COLUMNS] for case in cases]
+def _worksheet_xml(columns_list: list[str], data_rows: list[list[Any]], status_column_name: str | None = None) -> str:
+    rows = [columns_list] + data_rows
     sheet_rows: list[str] = []
     for row_index, row in enumerate(rows, start=1):
         cells = []
         for column_index, value in enumerate(row, start=1):
             reference = f"{_column_letter(column_index)}{row_index}"
             style = "1" if row_index == 1 else "0"
-            status_column_index = CSV_COLUMNS.index("Status") + 1
+            status_column_index = columns_list.index(status_column_name) + 1 if status_column_name in columns_list else -1
             if row_index > 1 and column_index == status_column_index:
                 style = {"pass": "2", "fail": "3"}.get(str(value), "4")
             escaped = xml_escape(str(value), {'"': "&quot;"})
             cells.append(f'<c r="{reference}" t="inlineStr" s="{style}"><is><t xml:space="preserve">{escaped}</t></is></c>')
         sheet_rows.append(f'<row r="{row_index}">{"".join(cells)}</row>')
     last_row = max(2, len(rows))
-    last_column = _column_letter(len(CSV_COLUMNS))
-    widths = [16, 24, 20, 20, 20, 15, 36, 34, 42, 36, 42, 42, 18, 14, 14, 32, 18, 28]
+    last_column = _column_letter(len(columns_list))
+    widths = [min(50, max(14, len(column) + 4)) for column in columns_list]
     columns = "".join(f'<col min="{i}" max="{i}" width="{width}" customWidth="1"/>' for i, width in enumerate(widths, start=1))
-    status_list = ",".join(STATUSES)
-    status_column = _column_letter(CSV_COLUMNS.index("Status") + 1)
-    sheet = (
+    validation = ""
+    if status_column_name in columns_list:
+        status_list = ",".join(STATUSES)
+        status_column = _column_letter(columns_list.index(status_column_name) + 1)
+        validation = f'<dataValidations count="1"><dataValidation type="list" allowBlank="0" sqref="{status_column}2:{status_column}1048576"><formula1>"{status_list}"</formula1></dataValidation></dataValidations>'
+    return (
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
         '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
         f'<cols>{columns}</cols><sheetData>{"".join(sheet_rows)}</sheetData>'
         f'<autoFilter ref="A1:{last_column}{last_row}"/>'
-        f'<dataValidations count="1"><dataValidation type="list" allowBlank="0" sqref="{status_column}2:{status_column}1048576"><formula1>"{status_list}"</formula1></dataValidation></dataValidations>'
+        f'{validation}'
         '</worksheet>'
     )
+
+
+def write_xlsx(path: Path, data: dict[str, Any]) -> None:
+    cases = data["test_cases"]
+    test_rows = [[case_to_row(case)[column] for column in CSV_COLUMNS] for case in cases]
+    security_columns = [
+        "Finding ID", "Title", "Classification", "Target", "Weakness", "Expected Result",
+        "Actual Result", "Error Location", "Evidence", "Owner Team", "ClickUp Eligible",
+    ]
+    security_rows = [
+        [
+            finding.get("id", ""), finding.get("title", ""), finding.get("classification", ""),
+            finding.get("target", ""), finding.get("weakness", ""), finding.get("expected_result", ""),
+            finding.get("actual_result", ""), finding.get("error_location", ""),
+            _compact(finding.get("evidence", [])), finding.get("owner_team", ""),
+            str(bool(finding.get("clickup_eligible"))).lower(),
+        ]
+        for finding in data.get("security_findings", [])
+    ]
+    counts = _summary(cases)
+    requirement_ids = sorted({item for case in cases for item in case.get("requirement_ids", [])})
+    risk_ids = sorted({item for case in cases for item in case.get("risk_ids", [])})
+    access_rows = data.get("access_control_matrix", [])
+    coverage_rows = [
+        ["Total test cases", len(cases)],
+        ["Requirements covered", len(requirement_ids)],
+        ["Risks covered", len(risk_ids)],
+        ["Access-control checks", len(access_rows)],
+        ["Security findings", len(data.get("security_findings", []))],
+        *[[f"Status: {status}", count] for status, count in counts.items()],
+    ]
+    sheets = [
+        ("Test Cases", _worksheet_xml(list(CSV_COLUMNS), test_rows, "Status")),
+        ("Security Findings", _worksheet_xml(security_columns, security_rows)),
+        ("Coverage Summary", _worksheet_xml(["Metric", "Value"], coverage_rows)),
+    ]
     styles = (
         '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
         '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
@@ -342,12 +457,17 @@ def write_xlsx(path: Path, cases: list[dict[str, Any]]) -> None:
         '</styleSheet>'
     )
     with zipfile.ZipFile(path, "w") as archive:
-        _zip_write(archive, "[Content_Types].xml", '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>')
+        worksheet_types = "".join(f'<Override PartName="/xl/worksheets/sheet{index}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>' for index in range(1, len(sheets) + 1))
+        _zip_write(archive, "[Content_Types].xml", f'<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>{worksheet_types}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>')
         _zip_write(archive, "_rels/.rels", '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')
-        _zip_write(archive, "xl/workbook.xml", '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Test Cases" sheetId="1" r:id="rId1"/></sheets></workbook>')
-        _zip_write(archive, "xl/_rels/workbook.xml.rels", '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>')
+        workbook_sheets = "".join(f'<sheet name="{xml_escape(name)}" sheetId="{index}" r:id="rId{index}"/>' for index, (name, _) in enumerate(sheets, start=1))
+        _zip_write(archive, "xl/workbook.xml", f'<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>{workbook_sheets}</sheets></workbook>')
+        relationships = "".join(f'<Relationship Id="rId{index}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet{index}.xml"/>' for index in range(1, len(sheets) + 1))
+        relationships += f'<Relationship Id="rId{len(sheets) + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+        _zip_write(archive, "xl/_rels/workbook.xml.rels", f'<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">{relationships}</Relationships>')
         _zip_write(archive, "xl/styles.xml", styles)
-        _zip_write(archive, "xl/worksheets/sheet1.xml", sheet)
+        for index, (_, sheet_xml) in enumerate(sheets, start=1):
+            _zip_write(archive, f"xl/worksheets/sheet{index}.xml", sheet_xml)
 
 
 def defect_fingerprint(data: dict[str, Any], case: dict[str, Any]) -> str:
@@ -372,7 +492,7 @@ def build_clickup_drafts(data: dict[str, Any]) -> dict[str, Any]:
         tasks.append(
             {
                 "fingerprint": fingerprint,
-                "external_key": f"QABSI-{fingerprint[:12]}",
+                "external_key": f"AQABSI-{fingerprint[:12]}",
                 "name": f"[BUG][{(case.get('severity') or 'untriaged').upper()}] {case['scenario']}",
                 "description_markdown": "\n".join(
                     [
@@ -394,6 +514,45 @@ def build_clickup_drafts(data: dict[str, Any]) -> dict[str, Any]:
                 "action": "create_or_update_by_fingerprint",
             }
         )
+    for finding in data.get("security_findings", []):
+        if finding.get("classification") != "confirmed" or not finding.get("clickup_eligible"):
+            continue
+        fingerprint = hashlib.sha256(
+            "|".join(
+                (
+                    data["environment"],
+                    data["source"]["repository"],
+                    str(finding.get("id", "")),
+                    str(finding.get("target", "")),
+                    str(finding.get("actual_result", "")),
+                )
+            ).encode()
+        ).hexdigest()
+        tasks.append(
+            {
+                "fingerprint": fingerprint,
+                "external_key": f"AQABSI-SEC-{fingerprint[:12]}",
+                "finding_id": finding.get("id"),
+                "name": f"[SECURITY][{str(finding.get('business_priority', 'unmapped')).upper()}] {finding.get('title', 'Confirmed security finding')}",
+                "description_markdown": "\n".join(
+                    [
+                        f"**Finding:** {finding.get('id', 'Not recorded')}",
+                        f"**Classification:** {finding.get('classification')}",
+                        f"**Target:** {finding.get('target', 'Not recorded')}",
+                        f"**Expected:** {finding.get('expected_result', 'Not recorded')}",
+                        f"**Actual:** {finding.get('actual_result', 'Not recorded')}",
+                        f"**Error location:** {finding.get('error_location', 'Needs validation')}",
+                        f"**Evidence:** {', '.join(finding.get('evidence', [])) or 'Not recorded'}",
+                        f"**Source commit:** {data['source']['commit_sha']}",
+                    ]
+                ),
+                "owner_team": finding.get("owner_team"),
+                "assignee_id": None,
+                "severity": finding.get("business_priority"),
+                "source_run_id": data["run_id"],
+                "action": "create_or_update_by_fingerprint",
+            }
+        )
     return {"dry_run": True, "publication_requires_authorization": True, "tasks": tasks}
 
 
@@ -410,7 +569,7 @@ def generate(input_path: Path, output_dir: Path) -> None:
         (temporary / "sanitized-run.json").write_text(json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (temporary / "qa-report.md").write_text(report, encoding="utf-8")
         write_csv(temporary / "test-cases.csv", data["test_cases"])
-        write_xlsx(temporary / "test-cases.xlsx", data["test_cases"])
+        write_xlsx(temporary / "test-cases.xlsx", data)
         confluence = {
             "dry_run": True,
             "publication_requires_authorization": True,
@@ -431,15 +590,15 @@ def generate(input_path: Path, output_dir: Path) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("input", type=Path, help="QABSI test-run JSON manifest")
+    parser.add_argument("input", type=Path, help="AQABSI test-run JSON manifest")
     parser.add_argument("output", type=Path, help="New output directory")
     args = parser.parse_args()
     try:
         generate(args.input.resolve(), args.output.resolve())
     except (OSError, json.JSONDecodeError, ManifestError) as exc:
-        print(f"QABSI artifact generation failed: {exc}", file=sys.stderr)
+        print(f"AQABSI artifact generation failed: {exc}", file=sys.stderr)
         return 2
-    print(f"Generated sanitized QABSI artifacts in {args.output.resolve()}")
+    print(f"Generated sanitized AQABSI artifacts in {args.output.resolve()}")
     return 0
 
 

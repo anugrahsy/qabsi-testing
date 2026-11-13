@@ -1,22 +1,22 @@
 {
   "schema_version": "1.0",
   "run_id": "QABSI-LOGIN-STATIC-20261112",
-  "title": "Gateway EA login and recovery pilot",
+  "title": "BSI Authentication login and recovery pilot",
   "module": "authentication",
   "environment": "development",
   "target": null,
   "started_at": "2026-11-12T00:00:00+07:00",
   "finished_at": null,
   "source": {
-    "repository": "lib-uii-gateway-ea-angular",
+    "repository": "bsi-auth-web-example",
     "commit_sha": "347be7947277be6005f5a721e7ec1109e29a9a1e",
     "merge_request_url": null
   },
   "limitations": [
     "Planning-only pilot: no test case was executed and every status is not_run.",
     "No target URL, authorized account, OTP sandbox, or runtime contract was provided.",
-    "AuthenticationService is supplied by external package @uiigateway/core 4.1.3 and was not source-reviewed.",
-    "The referenced login APIs are not implemented in the supplied svc-ea-lumen repository.",
+    "AuthenticationService is supplied by external package @bsi/auth-core 4.1.3 and was not source-reviewed.",
+    "The referenced login APIs are not implemented in the supplied bsi-auth-api-example repository.",
     "Both application worktrees contain unrelated local changes; analyzed login files were not modified."
   ],
   "test_cases": [

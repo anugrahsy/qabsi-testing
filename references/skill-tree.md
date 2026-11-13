@@ -1,16 +1,16 @@
-# Skill Tree — Struktur QABSI
+# Skill Tree — Struktur AQABSI
 
-Codex memakai root `qabsi-testing`; plugin Claude memakai skill ter-prefix `qabsi:`. Keduanya berbagi references, schemas, assets, dan scripts yang sama.
+Codex memakai root `aqabsi-testing`; plugin Claude memakai skill ter-prefix `aqabsi:`. Keduanya berbagi references, schemas, assets, config, dan scripts yang sama.
 
 ## Skill (5)
 
 | Skill | Fungsi | Trigger |
 |---|---|---|
-| `qabsi:analyze-testing` | Flow penuh dari nol | Tanpa PRD + tanpa test case |
-| `qabsi:testing` | Testing + report + bug | PRD + test case ada |
-| `qabsi:prd-generate` | PRD saja | Butuh PRD |
-| `qabsi:test-case-generate` | Test case saja | Butuh test case |
-| `qabsi:security-testing` | Security assessment | Minta cek keamanan |
+| `aqabsi:analyze-testing` | Flow penuh dari nol | Tanpa PRD + tanpa test case |
+| `aqabsi:testing` | Testing + report + bug | PRD + test case ada |
+| `aqabsi:prd-generate` | PRD adaptif | Butuh PRD profesional berbasis evidence |
+| `aqabsi:test-case-generate` | Test case saja | Butuh test case traceable |
+| `aqabsi:security-testing` | Security assessment | Minta cek keamanan yang sesuai authority |
 
 Root router memilih salah satu mode di atas dan selalu menerapkan `execution-safety.md`.
 

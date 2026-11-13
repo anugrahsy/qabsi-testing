@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "id": "project-example",
+  "layer": "project",
+  "inherits": "team-default",
+  "selected_stack_profiles": [],
+  "policy_overrides": {},
+  "commands": {
+    "test": "use the verified command declared by the inspected project",
+    "lint": "use the verified lint command declared by the inspected project"
+  },
+  "paths": {
+    "entrypoints": ["resolve from the supplied repository"],
+    "business_logic": ["resolve from the supplied repository"],
+    "data_boundaries": ["resolve from the supplied repository"],
+    "test_sources": ["resolve from the supplied repository"]
+  },
+  "notes": ["Generic example only; select detected stack profiles and verified project conventions before use."]
+}

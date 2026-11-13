@@ -1,6 +1,6 @@
 interface:
-  display_name: "QABSI Vibe Testing"
+  display_name: "AQABSI — AI QA BSI"
   short_description: "Evidence-backed QA, PRD, tests, and reports"
-  default_prompt: "Use $qabsi-testing to analyze this feature, build a traceable QA plan, execute authorized tests, and prepare sanitized draft artifacts."
+  default_prompt: "Use $aqabsi-testing to analyze this feature, build a traceable QA plan, execute authorized tests, and prepare sanitized draft artifacts."
 policy:
   allow_implicit_invocation: true

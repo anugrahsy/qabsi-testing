@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://qabsi.uii.ac.id/schemas/test-run.schema.json",
-  "title": "QABSI Test Run",
+  "$id": "https://aqabsi.uii.ac.id/schemas/test-run.schema.json",
+  "title": "AQABSI Test Run",
   "type": "object",
   "additionalProperties": false,
   "required": ["schema_version", "run_id", "title", "module", "environment", "started_at", "source", "test_cases"],
@@ -12,6 +12,25 @@
     "module": {"type": "string", "minLength": 1},
     "environment": {"type": "string", "enum": ["local", "test", "development", "staging", "production"]},
     "target": {"type": ["string", "null"]},
+    "authorization_record": {"type": ["object", "null"]},
+    "access_control_matrix": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["role", "action", "resource", "expected", "actual", "status", "test_case_id", "error_location"],
+        "properties": {
+          "role": {"type": "string"},
+          "action": {"type": "string"},
+          "resource": {"type": "string"},
+          "expected": {"type": "string"},
+          "actual": {"type": "string"},
+          "status": {"type": "string", "enum": ["pass", "fail", "blocked", "skipped", "not_run", "flaky", "environment_error"]},
+          "test_case_id": {"type": "string"},
+          "error_location": {"type": ["string", "null"]}
+        }
+      }
+    },
+    "security_findings": {"type": "array", "items": {"$ref": "security-finding.schema.json"}},
     "started_at": {"type": "string", "format": "date-time"},
     "finished_at": {"type": ["string", "null"], "format": "date-time"},
     "source": {

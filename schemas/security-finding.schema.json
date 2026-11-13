@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aqabsi.uii.ac.id/schemas/security-finding.schema.json",
+  "title": "AQABSI Normalized Security Finding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "title", "classification", "source_engine", "target", "evidence", "authorization", "business_priority"],
+  "properties": {
+    "id": {"type": "string"},
+    "title": {"type": "string", "minLength": 1},
+    "classification": {"type": "string", "enum": ["confirmed", "needs_validation", "rejected", "hardening_recommendation", "untested"]},
+    "source_engine": {"type": "string", "enum": ["cloudflare-security-audit", "strix-local", "strix-ci", "manual", "native-test"]},
+    "target": {"type": "string"},
+    "weakness": {"type": ["string", "null"]},
+    "expected_result": {"type": ["string", "null"]},
+    "actual_result": {"type": ["string", "null"]},
+    "error_location": {"type": ["string", "null"]},
+    "cvss_4_vector": {"type": ["string", "null"]},
+    "cvss_4_score": {"type": ["number", "null"], "minimum": 0, "maximum": 10},
+    "business_priority": {"type": "string", "enum": ["critical", "high", "medium", "low", "unmapped"]},
+    "evidence": {"type": "array", "items": {"type": "string"}},
+    "reproduction": {"type": "array", "items": {"type": "string"}},
+    "authorization": {
+      "type": ["object", "null"],
+      "properties": {
+        "authority_reference": {"type": "string"},
+        "target_allowlist": {"type": "array", "items": {"type": "string"}},
+        "environment": {"type": "string"},
+        "techniques": {"type": "array", "items": {"type": "string"}},
+        "expires_at": {"type": "string", "format": "date-time"},
+        "stop_contact": {"type": "string"}
+      }
+    },
+    "data_classification": {"type": "string", "enum": ["public", "internal", "internal_restricted", "confidential"]},
+    "owner_team": {"type": ["string", "null"]},
+    "clickup_eligible": {"type": "boolean"}
+  }
+}

@@ -1,0 +1,58 @@
+# Opt-in blueprint only. Review and adapt it in the target repository through a separate approved change.
+stages:
+  - aqabsi-verify
+  - aqabsi-report
+
+variables:
+  E2E_TELEMETRY_DISABLED: "1"
+  AQABSI_DRY_RUN: "true"
+  AQABSI_SECURITY_DRY_RUN: "true"
+  AQABSI_DATA_CLASSIFICATION: "internal_restricted"
+
+aqabsi_web_config_check:
+  stage: aqabsi-verify
+  image: node:22.20.0-bookworm-slim
+  script:
+    - test "$E2E_TELEMETRY_DISABLED" = "1"
+    - test "$AQABSI_DRY_RUN" = "true"
+    - test -n "$AQABSI_TARGET_URL"
+    - echo "Configuration validated in dry_run mode; no browser or model call was executed."
+  artifacts:
+    when: always
+    access: developer
+    expire_in: 7 days
+    paths:
+      - .aqabsi-output/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+      allow_failure: true
+
+aqabsi_security_plan:
+  stage: aqabsi-verify
+  image: python:3.12-slim
+  script:
+    - test "$AQABSI_SECURITY_DRY_RUN" = "true"
+    - test -n "$AQABSI_AUTHORIZATION_REFERENCE"
+    - echo "Security plan validated in dry_run mode; no scan was executed."
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+      allow_failure: true
+
+aqabsi_report:
+  stage: aqabsi-report
+  image: python:3.12-slim
+  script:
+    - python3 .aqabsi/scripts/validate_quality.py aqabsi-run.json --kind test-run
+    - python3 .aqabsi/scripts/generate_artifacts.py aqabsi-run.json .aqabsi-output/report
+  artifacts:
+    when: always
+    access: developer
+    expire_in: 14 days
+    paths:
+      - .aqabsi-output/report/
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: manual
+      allow_failure: true

@@ -1,4 +1,4 @@
-# PRD — Gateway EA Login, SSO, 2FA, and Password Recovery
+# PRD — BSI Authentication Login, SSO, 2FA, and Password Recovery
 
 ## 1. Document control
 
@@ -7,8 +7,8 @@
 | Document type | As-is technical reconstruction; not yet an approved business PRD |
 | Version / status | 0.1 / Draft — stakeholder and auth-platform validation required |
 | Evidence cutoff | 2026-11-12 Asia/Jakarta |
-| Frontend source | `lib-uii-gateway-ea-angular` commit `347be7947277be6005f5a721e7ec1109e29a9a1e`, branch `develop-ranp` |
-| Backend source | `svc-ea-lumen` commit `d35378df083a77c149e663dc4c99a8192d61b5f7`, branch `develop` |
+| Frontend source | `bsi-auth-web-example` commit `347be7947277be6005f5a721e7ec1109e29a9a1e`, branch `develop-ranp` |
+| Backend source | `bsi-auth-api-example` commit `d35378df083a77c149e663dc4c99a8192d61b5f7`, branch `develop` |
 | Runtime evidence | None; no target URL, account, or login authorization was provided |
 | Evidence classification | Source-verified facts, explicit inference, open questions, and recommendations are separated |
 
@@ -16,15 +16,15 @@ Both worktrees contained unrelated local changes. The analyzed login files were 
 
 ## 2. Executive summary
 
-The frontend presents account authentication through direct username/password login, organizational SSO, parent SSO, optional authenticator-based 2FA, and a WhatsApp OTP password-recovery flow. Authentication execution is delegated primarily to `AuthenticationService` from external package `@uiigateway/core` version `4.1.3`; recovery calls use a separate API base URL. The supplied EA Lumen service does not expose the referenced login routes, so server-side authentication requirements cannot be verified from these two repositories alone.
+The frontend presents account authentication through direct username/password login, organizational SSO, parent SSO, optional authenticator-based 2FA, and a WhatsApp OTP password-recovery flow. Authentication execution is delegated primarily to `AuthenticationService` from external package `@bsi/auth-core` version `4.1.3`; recovery calls use a separate API base URL. The supplied API service does not expose the referenced login routes, so server-side authentication requirements cannot be verified from these two repositories alone.
 
 This PRD documents observable source behavior and the evidence gaps that must be resolved before it can become an approved product contract.
 
 ## 3. Context and problem statement
 
-Users need to enter the Gateway application through an authentication method appropriate to their environment and account type. The UI must prevent incomplete submissions, communicate failures, complete a second factor when enabled, and provide a recoverable forgotten-password path.
+Users need to enter the application through an authentication method appropriate to their environment and account type. The UI must prevent incomplete submissions, communicate failures, complete a second factor when enabled, and provide a recoverable forgotten-password path.
 
-The current implementation spans the application repository, the external `@uiigateway/core` package, SSO providers, and login APIs outside `svc-ea-lumen`. No existing login PRD, API contract, unit spec, runtime target, or authorized test identity was found in the supplied scope.
+The current implementation spans the application repository, the external `@bsi/auth-core` package, SSO providers, and login APIs outside `bsi-auth-api-example`. No existing login PRD, API contract, unit spec, runtime target, or authorized test identity was found in the supplied scope.
 
 ## 4. Goals and success measures
 
@@ -60,11 +60,11 @@ The current implementation spans the application repository, the external `@uiig
 
 - Server-side credential verification, token issuance, session storage, SSO assertion validation, OTP generation/delivery, password hashing, authorization, and audit implementation.
 - Production execution, security exploitation, performance/load tests, real WhatsApp delivery, and real password changes.
-- Authentication APIs not present in `svc-ea-lumen`.
+- Authentication APIs not present in `bsi-auth-api-example`.
 
 ### Dependencies
 
-- `@uiigateway/core` `4.1.3`, particularly `AuthenticationService`.
+- `@bsi/auth-core` `4.1.3`, particularly `AuthenticationService`.
 - Environment-provided SSO, parent-SSO, and API base URLs.
 - External SSO identity providers.
 - External `/v1/login/*` recovery API.
@@ -74,7 +74,7 @@ The current implementation spans the application repository, the external `@uiig
 
 | Actor | Need | Verified authorization boundary |
 |---|---|---|
-| Gateway member | Direct or SSO authentication and account recovery | Not available in supplied source |
+| Application user | Direct or SSO authentication and account recovery | Not available in supplied source |
 | Parent user | Parent SSO entry | Link exists; downstream role behavior is unverified |
 | 2FA-enabled member | Complete authenticator verification | UI path exists; server rules are external |
 | QA engineer | Execute test identities without affecting real accounts | Test identities and environment not yet provided |
@@ -155,7 +155,7 @@ Server-side role, permission, and ownership enforcement are not available in the
 - `POST {apiUrl}/v1/login/forget/verify-otp`
 - `POST {apiUrl}/v1/login/reset`
 
-Request and response schemas, status codes, error envelopes, rate limits, idempotency, and authorization are not present in the supplied scope. Login/SSO/2FA service endpoints are hidden behind `@uiigateway/core`.
+Request and response schemas, status codes, error envelopes, rate limits, idempotency, and authorization are not present in the supplied scope. Login/SSO/2FA service endpoints are hidden behind `@bsi/auth-core`.
 
 ## 13. Non-functional requirements and recommendations
 

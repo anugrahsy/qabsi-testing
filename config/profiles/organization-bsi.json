@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "id": "organization-bsi",
+  "layer": "organization",
+  "inherits": null,
+  "selected_stack_profiles": [],
+  "policy": {
+    "data_egress": {"default_classification": "internal_restricted", "allow_managed_external": false},
+    "security": {"active_testing_requires_authorization": true, "production_active_testing": false},
+    "publication": {"requires_authorization": true, "guess_assignee": false},
+    "evidence": {"executed_verdict_requires_evidence": true}
+  },
+  "policy_overrides": {},
+  "commands": {},
+  "paths": {},
+  "notes": ["Team and project layers may specialize but cannot weaken this policy."]
+}

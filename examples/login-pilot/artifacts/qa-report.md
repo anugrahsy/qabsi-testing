@@ -1,4 +1,4 @@
-# QA Report — Gateway EA login and recovery pilot
+# QA Report — BSI Authentication login and recovery pilot
 
 ## Run information
 
@@ -6,7 +6,7 @@
 - Module: authentication
 - Environment: development
 - Target: Not recorded
-- Repository: lib-uii-gateway-ea-angular
+- Repository: bsi-auth-web-example
 - Commit: `347be7947277be6005f5a721e7ec1109e29a9a1e`
 - Merge request: Not recorded
 - Started: 2026-11-12T00:00:00+07:00
@@ -57,12 +57,20 @@
 | TC-A11Y-002 | — | accessibility | Inputs have programmatic names and errors are associated with fields | Every control has an unambiguous programmatic name and each error is perceivable and associated with its field. |  | not_run | — | frontend |
 | TC-A11Y-003 | — | accessibility | Loading, errors, success, and step transitions are announced | Dynamic states are perceivable without relying only on color or visual position, and focus moves predictably. |  | not_run | — | frontend |
 
+## Access-control matrix
+
+No access-control matrix was recorded for this run.
+
+## Security and access-control findings
+
+No normalized security finding was recorded for this run.
+
 ## Limitations
 
 - Planning-only pilot: no test case was executed and every status is not_run.
 - No target URL, authorized account, OTP sandbox, or runtime contract was provided.
-- AuthenticationService is supplied by external package @uiigateway/core 4.1.3 and was not source-reviewed.
-- The referenced login APIs are not implemented in the supplied svc-ea-lumen repository.
+- AuthenticationService is supplied by external package @bsi/auth-core 4.1.3 and was not source-reviewed.
+- The referenced login APIs are not implemented in the supplied bsi-auth-api-example repository.
 - Both application worktrees contain unrelated local changes; analyzed login files were not modified.
 
 ## Publication state

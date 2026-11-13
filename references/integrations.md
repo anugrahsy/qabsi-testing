@@ -1,6 +1,12 @@
-# Confluence and ClickUp Integration Contract
+# GitLab, Confluence, and ClickUp Integration Contract
 
 Helpers generate drafts only. Use the available official connector/API after checking its current tool schema and only when the user authorized the exact mutation.
+
+Every adapter starts with `dry_run: true`, uses a stable idempotency key, stores no secret values, and reports exactly which external mutations occurred. BSI source and internal-restricted evidence stay on BSI-managed infrastructure; ClickUp receives sanitized metadata and accessible links only.
+
+## GitLab BSI UII
+
+Treat the service as self-managed until base URL, API version, authentication method, internal CA, project path, MR IID, source/target SHA, pipeline/job IDs, and permissions are verified. Prefer masked/protected CI variables and never disable TLS verification. Adding a job to a target repository is a separate approved change.
 
 ## Ownership registry
 
@@ -19,7 +25,7 @@ Do not derive assignment from gender, a guessed name, commit authorship, or a Co
 
 ## Confluence
 
-Use `run_id` as the idempotency key. Search for an existing page/property before create; update the same run page when found. Include scope, source commit/MR, environment, summary, traceability, test results, defects, evidence links, limitations, and publication timestamp. Preserve a link to the sanitized spreadsheet artifact.
+Record deployment type (Cloud/Data Center), base URL, authentication method, space key, parent page, and attachment classification before publication. Use `run_id` as the idempotency key. Search for an existing page/property before create; update the same run page when found. Include scope, source commit/MR, environment, summary, traceability, test results, defects, evidence links, limitations, and publication timestamp. Preserve a link to the sanitized spreadsheet artifact.
 
 ## ClickUp
 

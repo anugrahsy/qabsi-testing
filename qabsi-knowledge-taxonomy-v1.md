@@ -1,12 +1,12 @@
-# QABSI Knowledge Taxonomy v1
+# AQABSI Knowledge Taxonomy v1
 
-Dokumen induk (master) — katalog taksonomi knowledge base QABSI.
+Dokumen induk (master) — katalog taksonomi knowledge base AQABSI (nama file dipertahankan untuk kompatibilitas referensi v1).
 Tanggal: 2026-11-12
 Status: v1 — draft untuk review
 
 ## 0. Status & Tujuan
 
-Dokumen ini mendefinisikan **QABSI Knowledge Base**: kumpulan modul pengetahuan pengujian software yang reusable, berbasis domain, mengacu standar dan praktik industri.
+Dokumen ini mendefinisikan **AQABSI Knowledge Base**: kumpulan modul pengetahuan pengujian software yang reusable, berbasis domain, mengacu standar dan praktik industri.
 
 Tujuan:
 - Menjadi **index/taksonomi induk** sebelum modul ditulis satu per satu.
@@ -231,7 +231,7 @@ Referensi standar.
 
 Tidak semua modul harus persis sama (accessibility, auth, DB transaction punya kebutuhan berbeda).
 
-## 6. Cara QABSI Memilih Module (context-driven)
+## 6. Cara AQABSI Memilih Module (context-driven)
 
 ```
 Application / Repository / PRD

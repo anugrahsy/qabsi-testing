@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0",
+  "document": {
+    "title": "Synthetic Service CRUD Technical Reconstruction",
+    "version": "1.0",
+    "status": "in_review",
+    "business_owner": "synthetic-product-owner",
+    "technical_owner": "synthetic-backend-team",
+    "qa_owner": "synthetic-qa-team",
+    "reviewers": ["synthetic-security-reviewer"],
+    "evidence_cutoff": "2026-11-13T12:00:00+07:00",
+    "source_commits": ["0123456789abcdef"]
+  },
+  "prd_profile": "api-crud-change",
+  "quality_verdict": "review_ready",
+  "summary": "Define an evidence-backed CRUD contract for a synthetic service resource using external UUIDs and role-aware access.",
+  "evidence_sources": [
+    {
+      "id": "SRC-CRUD-CONTRACT",
+      "type": "synthetic_api_contract",
+      "location": "examples/crud-pilot/synthetic-contract",
+      "classification": "verified",
+      "confidence": "high",
+      "sensitivity": "public"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "FR-CRUD-LIST",
+      "statement": "The API shall return an authorized, paginated service collection without internal identifiers.",
+      "priority": "must",
+      "evidence_type": "verified",
+      "source": "SRC-CRUD-CONTRACT",
+      "source_ids": ["SRC-CRUD-CONTRACT"],
+      "confidence": "high",
+      "acceptance_criteria": ["GET collection returns HTTP 200, documented pagination metadata, external UUIDs, and no internal numeric identifiers."],
+      "error_behavior": ["Invalid pagination values return the documented validation error without querying an unbounded result set."]
+    },
+    {
+      "id": "FR-CRUD-DETAIL",
+      "statement": "The API shall resolve an authorized service detail by external UUID.",
+      "priority": "must",
+      "evidence_type": "verified",
+      "source": "SRC-CRUD-CONTRACT",
+      "source_ids": ["SRC-CRUD-CONTRACT"],
+      "confidence": "high",
+      "acceptance_criteria": ["GET detail for an authorized existing UUID returns HTTP 200 and the documented public fields."],
+      "error_behavior": ["Unknown UUID returns the documented not-found response; a forbidden owner receives HTTP 403 without resource disclosure."]
+    },
+    {
+      "id": "FR-CRUD-CREATE",
+      "statement": "The API shall validate and create one service resource atomically.",
+      "priority": "must",
+      "evidence_type": "verified",
+      "source": "SRC-CRUD-CONTRACT",
+      "source_ids": ["SRC-CRUD-CONTRACT"],
+      "confidence": "high",
+      "acceptance_criteria": ["POST valid synthetic data returns HTTP 201 with an external UUID and persists one auditable record."],
+      "error_behavior": ["Duplicate or invalid input returns the documented error and persists no partial record."]
+    },
+    {
+      "id": "FR-CRUD-REPLACE",
+      "statement": "The API shall replace an authorized service resource through PUT using complete validated input.",
+      "priority": "must",
+      "evidence_type": "verified",
+      "source": "SRC-CRUD-CONTRACT",
+      "source_ids": ["SRC-CRUD-CONTRACT"],
+      "confidence": "high",
+      "acceptance_criteria": ["PUT complete input returns HTTP 200 and persists the documented replacement exactly once."],
+      "error_behavior": ["Omitted required fields return the documented validation error and preserve the previous record."]
+    },
+    {
+      "id": "FR-CRUD-PATCH",
+      "statement": "The API shall update only allowlisted fields through PATCH and reject stale versions.",
+      "priority": "must",
+      "evidence_type": "verified",
+      "source": "SRC-CRUD-CONTRACT",
+      "source_ids": ["SRC-CRUD-CONTRACT"],
+      "confidence": "high",
+      "acceptance_criteria": ["PATCH an allowlisted field and current version returns HTTP 200 while unrelated fields remain unchanged."],
+      "error_behavior": ["Forbidden fields or a stale version return the documented error without persistence changes."]
+    },
+    {
+      "id": "FR-CRUD-DELETE",
+      "statement": "The API shall allow an authorized administrator to soft-delete a service resource and deny unauthorized roles.",
+      "priority": "must",
+      "evidence_type": "verified",
+      "source": "SRC-CRUD-CONTRACT",
+      "source_ids": ["SRC-CRUD-CONTRACT"],
+      "confidence": "high",
+      "acceptance_criteria": ["DELETE by an authorized administrator returns the documented success response, hides the resource from normal reads, and writes one audit event."],
+      "error_behavior": ["A viewer receives HTTP 403 with no state change; repeated deletion follows the documented idempotency contract."]
+    }
+  ],
+  "adaptive_sections": [
+    {
+      "id": "scope-boundary",
+      "title": "Scope boundary",
+      "applicability": "required",
+      "content": {
+        "in_scope": ["Synthetic service CRUD API and role-aware access"],
+        "out_of_scope": ["Production data, UI implementation, live publication"],
+        "non_goals": ["Defining BSI business policy from synthetic evidence"]
+      }
+    },
+    {
+      "id": "risk-register",
+      "title": "Risk register",
+      "applicability": "required",
+      "content": {
+        "critical": ["Cross-owner access", "unauthorized delete", "partial writes"],
+        "high": ["mass assignment", "lost update", "field exposure", "unbounded query"]
+      }
+    },
+    {
+      "id": "authorization-matrix",
+      "title": "Authorization matrix",
+      "applicability": "required",
+      "content": {
+        "administrator": ["GET", "POST", "PUT", "PATCH", "DELETE"],
+        "viewer": ["GET"]
+      }
+    },
+    {
+      "id": "ui-journey",
+      "title": "UI journey",
+      "applicability": "not_applicable",
+      "rationale": "This synthetic pilot validates an API-only change.",
+      "reviewer": "synthetic-qa-team"
+    },
+    {
+      "id": "release-evidence",
+      "title": "Release evidence",
+      "applicability": "required",
+      "content": {
+        "required": ["quality validator pass", "authorized test-run manifest", "sanitized workbook", "residual-risk review"]
+      }
+    }
+  ],
+  "business_rules": [],
+  "open_questions": [],
+  "traceability": [
+    {"requirement_id": "FR-CRUD-LIST", "source_ids": ["SRC-CRUD-CONTRACT"], "risk_ids": ["RISK-DATA-EXPOSURE"], "test_case_ids": ["TC-CRUD-001", "TC-CRUD-002"]},
+    {"requirement_id": "FR-CRUD-DETAIL", "source_ids": ["SRC-CRUD-CONTRACT"], "risk_ids": ["RISK-IDOR"], "test_case_ids": ["TC-CRUD-003", "TC-CRUD-004"]},
+    {"requirement_id": "FR-CRUD-CREATE", "source_ids": ["SRC-CRUD-CONTRACT"], "risk_ids": ["RISK-PARTIAL-WRITE"], "test_case_ids": ["TC-CRUD-005", "TC-CRUD-006"]},
+    {"requirement_id": "FR-CRUD-REPLACE", "source_ids": ["SRC-CRUD-CONTRACT"], "risk_ids": ["RISK-FIELD-RESET"], "test_case_ids": ["TC-CRUD-007", "TC-CRUD-008"]},
+    {"requirement_id": "FR-CRUD-PATCH", "source_ids": ["SRC-CRUD-CONTRACT"], "risk_ids": ["RISK-MASS-ASSIGNMENT", "RISK-LOST-UPDATE"], "test_case_ids": ["TC-CRUD-009", "TC-CRUD-010"]},
+    {"requirement_id": "FR-CRUD-DELETE", "source_ids": ["SRC-CRUD-CONTRACT"], "risk_ids": ["RISK-UNAUTHORIZED-DELETE"], "test_case_ids": ["TC-CRUD-011", "TC-CRUD-012", "TC-CRUD-013"]}
+  ]
+}

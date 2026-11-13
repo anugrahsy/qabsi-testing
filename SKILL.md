@@ -1,14 +1,14 @@
 ---
-name: qabsi-testing
-description: Plan and execute evidence-backed QA for web apps and APIs, including source-derived PRDs, professional test cases, manual and automated testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for QABSI or vibe-testing workflows; do not use it to publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
+name: aqabsi-testing
+description: Plan and execute evidence-backed QA for web apps, APIs, services, and data systems, including professional source-derived PRDs, traceable test cases, authorized testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for AQABSI or AI QA BSI workflows; do not publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
 metadata:
-  version: "1.0.0"
+  version: "2.0.0"
   organization: "BSI UII"
 ---
 
-# QABSI Testing
+# AQABSI — AI QA BSI
 
-QABSI is a risk-based QA orchestrator. It discovers facts, separates them from inference, chooses relevant testing layers, records reproducible evidence, and prepares sanitized artifacts. It never treats generated text as proof that a test ran.
+AQABSI (AI QA BSI) is a BSI-wide, risk-based QA orchestrator. It discovers facts, separates them from inference, chooses relevant testing layers for the detected stack, records reproducible evidence, and prepares sanitized artifacts. It never treats generated text as proof that a test ran.
 
 ## Choose one mode
 

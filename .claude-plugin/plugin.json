@@ -1,7 +1,7 @@
 {
-  "name": "qabsi",
-  "version": "1.0.0",
-  "description": "Evidence-backed QA BSI UII: professional PRD, risk-based manual and automated testing, spreadsheets, reports, and safe defect drafts.",
+  "name": "aqabsi",
+  "version": "2.0.0",
+  "description": "AQABSI (AI QA BSI): evidence-backed professional PRD, risk-based testing, sanitized reports, and safe defect drafts for BSI teams.",
   "author": {
     "name": "BSI UII"
   },
@@ -10,7 +10,7 @@
   "skills": "./skills/",
   "hooks": {},
   "interface": {
-    "displayName": "QABSI",
+    "displayName": "AQABSI — AI QA BSI",
     "shortDescription": "Evidence-backed QA and vibe testing",
     "longDescription": "Professional PRD generation, traceable risk-based testing, sanitized spreadsheets/reports, and safe Confluence/ClickUp drafts.",
     "category": "Developer Tools"

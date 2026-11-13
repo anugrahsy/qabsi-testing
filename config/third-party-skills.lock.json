@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "reviewed_at": "2026-11-13",
+  "sources": [
+    {
+      "repository": "cloudflare/security-audit-skill",
+      "commit": "c1c8a8c1471069fb0e188eeaff69b8e8db6564a8",
+      "license": "MIT",
+      "skills": ["skills/security-audit"],
+      "local_names": ["security-audit"],
+      "purpose": "Source-first defensive audit guidance and evidence discipline"
+    },
+    {
+      "repository": "obra/superpowers",
+      "commit": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "license": "MIT",
+      "skills": ["skills/* reviewed individually"],
+      "local_names": ["existing-superpowers-installation"],
+      "purpose": "Disciplined planning, TDD, debugging, verification, and review workflows"
+    },
+    {
+      "repository": "e2e-inc/e2e",
+      "commit": "79f70ae419adb0f4c2df8d374c1b7d9e3851726d",
+      "license": "Apache-2.0",
+      "skills": ["skills/e2e"],
+      "local_names": ["e2e"],
+      "web_only": true,
+      "telemetry_disabled": true,
+      "purpose": "Isolated web E2E execution only"
+    },
+    {
+      "repository": "usestrix/strix",
+      "commit": "928b1ca66ea5a00e7fe83f0fce84c7d557ff8091",
+      "license": "Apache-2.0",
+      "skills": [
+        "application-security-testing",
+        "api-security-testing",
+        "find-security-vulnerabilities-in-code",
+        "owasp-top-10-testing",
+        "penetration-testing-with-strix",
+        "web-app-penetration-testing",
+        "ci-security-scanning-with-strix",
+        "fix-security-vulnerabilities-with-strix"
+      ],
+      "local_names": [
+        "application-security-testing",
+        "api-security-testing",
+        "find-security-vulnerabilities-in-code",
+        "owasp-top-10-testing",
+        "penetration-testing-with-strix",
+        "web-app-penetration-testing",
+        "ci-security-scanning-with-strix",
+        "fix-security-vulnerabilities-with-strix"
+      ],
+      "managed_cloud_disabled": true,
+      "purpose": "Authorized local/CI defensive security workflows"
+    }
+  ]
+}

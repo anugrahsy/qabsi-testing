@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aqabsi.uii.ac.id/schemas/evidence-ledger.schema.json",
+  "title": "AQABSI Evidence Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "sources", "contradictions"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "type", "title", "location", "revision", "classification", "confidence", "sensitivity", "allowed_destinations"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^SRC-[A-Z0-9-]+$"},
+          "type": {"type": "string"},
+          "title": {"type": "string", "minLength": 1},
+          "location": {"type": "string", "minLength": 1},
+          "revision": {"type": ["string", "null"]},
+          "owner": {"type": ["string", "null"]},
+          "approval_state": {"type": ["string", "null"]},
+          "classification": {"type": "string", "enum": ["verified", "inferred", "assumption", "open_question", "recommendation"]},
+          "confidence": {"type": "string", "enum": ["high", "medium", "low"]},
+          "freshness_checked_at": {"type": ["string", "null"], "format": "date-time"},
+          "sensitivity": {"type": "string", "enum": ["public", "internal", "internal_restricted", "confidential"]},
+          "allowed_destinations": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+        }
+      }
+    },
+    "contradictions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "source_ids", "statement", "status"],
+        "properties": {
+          "id": {"type": "string"},
+          "source_ids": {"type": "array", "minItems": 2, "items": {"type": "string"}},
+          "statement": {"type": "string"},
+          "status": {"type": "string", "enum": ["open", "resolved", "accepted_risk"]},
+          "decision_owner": {"type": ["string", "null"]},
+          "resolution": {"type": ["string", "null"]}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://aqabsi.uii.ac.id/schemas/module-registry.schema.json",
+  "title": "AQABSI Module Registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "modules", "stack_profiles"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "detection_cues", "evidence", "risks", "dimensions", "preferred_layers", "oracles", "cleanup"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^[a-z0-9_.-]+$"},
+          "name": {"type": "string"},
+          "detection_cues": {"type": "array", "items": {"type": "string"}},
+          "evidence": {"type": "array", "items": {"type": "string"}},
+          "risks": {"type": "array", "items": {"type": "string"}},
+          "dimensions": {"type": "array", "items": {"type": "string"}},
+          "preferred_layers": {"type": "array", "items": {"type": "string"}},
+          "oracles": {"type": "array", "items": {"type": "string"}},
+          "cleanup": {"type": "array", "items": {"type": "string"}},
+          "related_modules": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+    "stack_profiles": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "family", "detection_cues", "evidence_locations", "native_test_commands"],
+        "properties": {
+          "id": {"type": "string"},
+          "family": {"type": "string", "enum": ["frontend", "backend", "fullstack", "unknown"]},
+          "detection_cues": {"type": "array", "items": {"type": "string"}},
+          "evidence_locations": {"type": "array", "items": {"type": "string"}},
+          "native_test_commands": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

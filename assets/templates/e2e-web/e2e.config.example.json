@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "dry_run": true,
+  "engine": "e2e-web",
+  "node_runtime": ">=22.20.0",
+  "environment": "staging",
+  "target_url": null,
+  "telemetry": {"environment_variable": "E2E_TELEMETRY_DISABLED", "required_value": "1"},
+  "agentic_model": {"enabled": false, "endpoint": null, "allow_bsi_data_egress": false},
+  "credentials": {"mode": "opaque_secret_reference", "references": []},
+  "browser": {"name": "chromium", "headless": true},
+  "authorization_reference": null,
+  "allowed_mutations": [],
+  "cleanup": [],
+  "evidence_directory": ".aqabsi-output/e2e-evidence",
+  "tls": {"verify": true, "ca_bundle_variable": "AQABSI_INTERNAL_CA_BUNDLE"}
+}
