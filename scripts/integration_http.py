@@ -12,7 +12,7 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urljoin, urlsplit
 from urllib.request import HTTPRedirectHandler, Request, build_opener
 
-from integration_config import ClickUpConfig, ConfluenceConfig, redact
+from integration_config import ClickUpConfig, ConfluenceConfig, LOOPBACK_HOSTS, TargetAuthConfig, redact
 
 
 CLICKUP_API_BASE = "https://api.clickup.com/api/v2"
@@ -368,4 +368,123 @@ def verify_clickup(
             "workspace_id": config.workspace_id,
             "space_id": space_id,
         },
+    )
+
+
+def verify_target_app(config: TargetAuthConfig) -> ProviderVerification:
+    parsed = urlsplit(config.base_url)
+    hostname = (parsed.hostname or "").lower()
+    is_safe_env = (
+        hostname in LOOPBACK_HOSTS
+        or any(
+            tag in hostname
+            for tag in (
+                "dev",
+                "staging",
+                "stag",
+                "test",
+                "local",
+                "demo",
+                "qa",
+                "sandbox",
+                "uat",
+                "preview",
+            )
+        )
+        or hostname.startswith("10.")
+        or hostname.startswith("192.168.")
+        or hostname.startswith("172.16.")
+    )
+    if not is_safe_env:
+        return ProviderVerification(
+            status="forbidden",
+            destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+            errors=(
+                "Target host appears to be a production environment. "
+                "AQABSI requires an explicit dev/staging environment or verified test authorization.",
+            ),
+        )
+
+    base_resp = request_json(
+        HttpRequest(method="GET", url=config.base_url, timeout=8.0),
+        config.secrets,
+    )
+    if not base_resp.ok and base_resp.category in {"unreachable", "redirect_blocked"}:
+        return ProviderVerification(
+            status=base_resp.category,
+            destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+            errors=(base_resp.error or "Target application could not be reached within the bounded request.",),
+        )
+
+    if config.auth_mode == "web_login":
+        login_url = urljoin(config.base_url, config.login_path)
+        login_resp = request_json(
+            HttpRequest(
+                method="POST",
+                url=login_url,
+                body={"username": config.username, "password": config.password},
+                timeout=8.0,
+            ),
+            config.secrets,
+        )
+        if login_resp.ok:
+            return ProviderVerification(
+                status="verified",
+                identity={"username": config.username},
+                destination={
+                    "base_url": config.base_url,
+                    "auth_mode": config.auth_mode,
+                    "login_path": config.login_path,
+                },
+            )
+        if login_resp.category in {"unauthorized", "forbidden"}:
+            return ProviderVerification(
+                status="unauthorized",
+                destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+                errors=("Target application rejected test credentials (HTTP 401/403).",),
+            )
+        if login_resp.category == "unreachable":
+            return ProviderVerification(
+                status="unreachable",
+                destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+                errors=(login_resp.error or "Login endpoint is unreachable.",),
+            )
+        return ProviderVerification(
+            status="invalid",
+            destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+            errors=(login_resp.error or f"Target login returned status {login_resp.status_code}.",),
+        )
+
+    if config.auth_mode == "bearer_token":
+        probe_resp = request_json(
+            HttpRequest(
+                method="GET",
+                url=config.base_url,
+                headers={"Authorization": f"Bearer {config.token}"},
+                timeout=8.0,
+            ),
+            config.secrets,
+        )
+        if probe_resp.category in {"unauthorized", "forbidden"}:
+            return ProviderVerification(
+                status=probe_resp.category,
+                destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+                errors=("Target application rejected test bearer token.",),
+            )
+        return ProviderVerification(
+            status="verified",
+            identity={"auth_mode": "bearer_token"},
+            destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+        )
+
+    if config.auth_mode == "sso_manual_handoff":
+        return ProviderVerification(
+            status="verified",
+            identity={"username": config.username, "mode": "sso_manual_handoff"},
+            destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
+        )
+
+    return ProviderVerification(
+        status="verified",
+        destination={"base_url": config.base_url, "auth_mode": config.auth_mode},
     )

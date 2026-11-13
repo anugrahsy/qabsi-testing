@@ -61,14 +61,44 @@ class ClickUpConfig:
         return (self.api_token,) if self.api_token else ()
 
 
+TARGET_AUTH_MODES = {
+    "web_login",
+    "bearer_token",
+    "basic_auth",
+    "sso_manual_handoff",
+    "none",
+}
+TARGET_SETUP_GUIDANCE = (
+    "Akun pengujian target aplikasi belum dikonfigurasi. Siapkan username dan password "
+    "melalui secret manager atau environment terminal. Jangan kirim password melalui chat."
+)
+
+
+@dataclass(frozen=True)
+class TargetAuthConfig:
+    base_url: str
+    auth_mode: str
+    username: str
+    password: str
+    token: str
+    login_path: str
+    missing: tuple[str, ...]
+    errors: tuple[str, ...]
+
+    @property
+    def secrets(self) -> tuple[str, ...]:
+        return tuple(value for value in (self.password, self.token) if value)
+
+
 @dataclass(frozen=True)
 class IntegrationConfig:
     confluence: ConfluenceConfig
     clickup: ClickUpConfig
+    target: TargetAuthConfig
 
     @property
     def secrets(self) -> tuple[str, ...]:
-        return self.confluence.secrets + self.clickup.secrets
+        return self.confluence.secrets + self.clickup.secrets + self.target.secrets
 
 
 def _value(environ: Mapping[str, str], name: str) -> str:
@@ -168,6 +198,36 @@ def load_integration_config(environ: Mapping[str, str]) -> IntegrationConfig:
             "AQABSI_CLICKUP_AUTH_MODE must be personal or oauth.",
         )
 
+    target_base_url_raw = _value(environ, "AQABSI_TARGET_BASE_URL")
+    target_base_url, target_base_errors = _validate_base_url(target_base_url_raw)
+    target_auth_mode_raw = _value(environ, "AQABSI_TARGET_AUTH_MODE").lower()
+    target_auth_mode = target_auth_mode_raw or "web_login"
+    target_username = _value(environ, "AQABSI_TEST_USERNAME")
+    target_password = _value(environ, "AQABSI_TEST_PASSWORD")
+    target_token = _value(environ, "AQABSI_TEST_TOKEN")
+    target_login_path = _value(environ, "AQABSI_TARGET_LOGIN_PATH") or "/login"
+
+    target_missing: list[str] = []
+    if not target_base_url:
+        target_missing.append("AQABSI_TARGET_BASE_URL")
+
+    target_errors = list(target_base_errors)
+    if target_auth_mode not in TARGET_AUTH_MODES:
+        target_errors.append(
+            f"AQABSI_TARGET_AUTH_MODE must be one of: {', '.join(sorted(TARGET_AUTH_MODES))}."
+        )
+    elif target_auth_mode in {"web_login", "basic_auth"}:
+        if not target_username:
+            target_missing.append("AQABSI_TEST_USERNAME")
+        if not target_password:
+            target_missing.append("AQABSI_TEST_PASSWORD")
+    elif target_auth_mode == "bearer_token":
+        if not target_token:
+            target_missing.append("AQABSI_TEST_TOKEN")
+    elif target_auth_mode == "sso_manual_handoff":
+        if not target_username:
+            target_missing.append("AQABSI_TEST_USERNAME")
+
     return IntegrationConfig(
         confluence=ConfluenceConfig(
             deployment=deployment,
@@ -189,6 +249,16 @@ def load_integration_config(environ: Mapping[str, str]) -> IntegrationConfig:
             ownership_registry_configured=ownership_registry_configured,
             missing=clickup_missing,
             errors=clickup_errors,
+        ),
+        target=TargetAuthConfig(
+            base_url=target_base_url,
+            auth_mode=target_auth_mode,
+            username=target_username,
+            password=target_password,
+            token=target_token,
+            login_path=target_login_path,
+            missing=tuple(target_missing),
+            errors=tuple(target_errors),
         ),
     )
 
@@ -220,7 +290,7 @@ def _status(missing: tuple[str, ...], errors: tuple[str, ...]) -> str:
 def build_readiness(
     config: IntegrationConfig, providers: Iterable[str] | None = None
 ) -> dict[str, object]:
-    selected = tuple(providers or ("confluence", "clickup"))
+    selected = tuple(providers or ("confluence", "clickup", "target"))
     result: dict[str, object] = {
         "schema_version": "1.0",
         "mode": "offline",
@@ -268,5 +338,21 @@ def build_readiness(
                 "guidance": "Required only for automatic assignee resolution; keep tasks unassigned when mapping is unresolved.",
             },
             "secret_delivery": "Use environment variables supplied by an approved secret manager; never paste tokens into chat.",
+        }
+    if "target" in selected:
+        item = config.target
+        provider_results["target"] = {
+            "status": _status(item.missing, item.errors),
+            "missing": list(item.missing),
+            "errors": list(item.errors),
+            "destination": {
+                "base_url": item.base_url or None,
+                "auth_mode": item.auth_mode,
+                "username": item.username or None,
+                "login_path": item.login_path,
+            },
+            "setup_guidance": TARGET_SETUP_GUIDANCE,
+            "secret_delivery": "Use environment variables supplied by an approved secret manager; never paste passwords or tokens into chat.",
+            "authorization_scope": "Single-account credentials enable authenticated functional testing. Multi-role/IDOR testing requires dedicated role credentials; unconfigured roles will be marked as blocked.",
         }
     return result

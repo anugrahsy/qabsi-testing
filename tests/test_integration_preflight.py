@@ -19,14 +19,21 @@ class FakeHandler(BaseHTTPRequestHandler):
     routes: dict[tuple[str, str], tuple[int, dict[str, str], object]] = {}
     requests: list[dict[str, object]] = []
 
-    def do_GET(self):
+    def _handle_request(self, method: str):
+        content_length = int(self.headers.get("Content-Length", 0))
+        body = self.rfile.read(content_length) if content_length > 0 else b""
         type(self).requests.append(
-            {"method": "GET", "path": self.path, "authorization": self.headers.get("Authorization")}
+            {
+                "method": method,
+                "path": self.path,
+                "authorization": self.headers.get("Authorization"),
+                "body": body.decode("utf-8", errors="replace"),
+            }
         )
-        status, headers, body = type(self).routes.get(
-            ("GET", self.path), (404, {}, {"message": "missing"})
+        status, headers, response_body = type(self).routes.get(
+            (method, self.path), (404, {}, {"message": "missing"})
         )
-        encoded = json.dumps(body).encode("utf-8")
+        encoded = json.dumps(response_body).encode("utf-8")
         self.send_response(status)
         for key, value in headers.items():
             self.send_header(key, value)
@@ -34,6 +41,12 @@ class FakeHandler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(len(encoded)))
         self.end_headers()
         self.wfile.write(encoded)
+
+    def do_GET(self):
+        self._handle_request("GET")
+
+    def do_POST(self):
+        self._handle_request("POST")
 
     def log_message(self, format, *args):
         return
@@ -543,6 +556,181 @@ class IntegrationPreflightTest(unittest.TestCase):
         self.assertEqual(response.category, "redirect_blocked")
         self.assertEqual(target.handler.requests, [])
         self.assertNotIn("private-token-value", json.dumps(response.to_dict()))
+
+    def test_target_auth_config_parses_and_validates_modes(self):
+        config_module = self.load_config_module()
+
+        # Missing target base URL
+        empty_config = config_module.load_integration_config({})
+        self.assertIn("AQABSI_TARGET_BASE_URL", empty_config.target.missing)
+        self.assertEqual(empty_config.target.auth_mode, "web_login")
+
+        # Web login mode: requires username and password
+        partial_config = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "https://gateway-dev.uii.ac.id",
+                "AQABSI_TARGET_AUTH_MODE": "web_login",
+                "AQABSI_TEST_USERNAME": "test_user",
+            }
+        )
+        self.assertIn("AQABSI_TEST_PASSWORD", partial_config.target.missing)
+        self.assertNotIn("AQABSI_TEST_USERNAME", partial_config.target.missing)
+        self.assertEqual(partial_config.target.errors, ())
+
+        # Full web login config
+        full_config = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "https://gateway-dev.uii.ac.id",
+                "AQABSI_TARGET_AUTH_MODE": "web_login",
+                "AQABSI_TEST_USERNAME": "test_user",
+                "AQABSI_TEST_PASSWORD": "super-secret-password-123",
+                "AQABSI_TARGET_LOGIN_PATH": "/api/v1/auth/login",
+            }
+        )
+        self.assertEqual(full_config.target.missing, ())
+        self.assertEqual(full_config.target.errors, ())
+        self.assertEqual(full_config.target.username, "test_user")
+        self.assertEqual(full_config.target.login_path, "/api/v1/auth/login")
+        self.assertIn("super-secret-password-123", full_config.secrets)
+        self.assertIn("super-secret-password-123", full_config.target.secrets)
+
+        # Bearer token mode
+        token_config = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "https://gateway-dev.uii.ac.id",
+                "AQABSI_TARGET_AUTH_MODE": "bearer_token",
+                "AQABSI_TEST_TOKEN": "secret-bearer-token",
+            }
+        )
+        self.assertEqual(token_config.target.missing, ())
+        self.assertIn("secret-bearer-token", token_config.target.secrets)
+
+        # Invalid auth mode
+        invalid_mode = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "https://gateway-dev.uii.ac.id",
+                "AQABSI_TARGET_AUTH_MODE": "invalid_mode",
+            }
+        )
+        self.assertTrue(any("AQABSI_TARGET_AUTH_MODE" in err for err in invalid_mode.target.errors))
+
+    def test_target_auth_secrets_are_redacted_and_never_leaked(self):
+        config_module = self.load_config_module()
+        config = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "https://gateway-dev.uii.ac.id",
+                "AQABSI_TARGET_AUTH_MODE": "web_login",
+                "AQABSI_TEST_USERNAME": "test_user",
+                "AQABSI_TEST_PASSWORD": "super-secret-password-123",
+                "AQABSI_TEST_TOKEN": "super-secret-token-xyz",
+            }
+        )
+        payload = config_module.build_readiness(config, ["target"])
+        redacted_payload = config_module.redact(payload, config.secrets)
+        dumped = json.dumps(redacted_payload)
+        self.assertNotIn("super-secret-password-123", dumped)
+        self.assertNotIn("super-secret-token-xyz", dumped)
+        self.assertEqual(redacted_payload["providers"]["target"]["status"], "ready")
+        self.assertEqual(redacted_payload["providers"]["target"]["destination"]["username"], "test_user")
+
+    def test_cli_target_preflight_reports_missing_and_guidance(self):
+        result = self.run_cli("--provider", "target", "--json")
+        self.assertEqual(result.returncode, 2)
+        payload = json.loads(result.stdout)
+        target = payload["providers"]["target"]
+        self.assertEqual(target["status"], "missing")
+        self.assertIn("AQABSI_TARGET_BASE_URL", target["missing"])
+        self.assertIn("Siapkan username dan password", target["setup_guidance"])
+
+        human_result = self.run_cli("--provider", "target")
+        self.assertEqual(human_result.returncode, 2)
+        self.assertIn("target: missing", human_result.stdout)
+        self.assertIn("Siapkan username dan password", human_result.stdout)
+        self.assertIn("Jangan kirim password melalui chat", human_result.stdout)
+
+    def test_verify_target_app_login_smoke_test(self):
+        config_module = self.load_config_module()
+        http_module = self.load_http_module()
+
+        secret_pass = "my-secret-test-password"
+        secret_token = "issued-session-jwt-token"
+
+        # 1. Successful web login
+        success_routes = {
+            ("GET", "/"): (200, {}, {"app": "Gateway Dev", "environment": "dev"}),
+            ("POST", "/api/v1/auth/login"): (
+                200,
+                {"Set-Cookie": "session=sensitive-session-cookie; Path=/; HttpOnly"},
+                {"ok": True, "token": secret_token, "user": {"username": "qa_dev_user"}},
+            ),
+        }
+        with FakeServer(success_routes) as server:
+            config = config_module.load_integration_config(
+                {
+                    "AQABSI_TARGET_BASE_URL": server.base_url,
+                    "AQABSI_TARGET_AUTH_MODE": "web_login",
+                    "AQABSI_TEST_USERNAME": "qa_dev_user",
+                    "AQABSI_TEST_PASSWORD": secret_pass,
+                    "AQABSI_TARGET_LOGIN_PATH": "/api/v1/auth/login",
+                }
+            )
+            result = http_module.verify_target_app(config.target)
+            self.assertEqual(result.status, "verified")
+            self.assertEqual(result.identity.get("username"), "qa_dev_user")
+            dumped = json.dumps(result.to_dict())
+            self.assertNotIn(secret_pass, dumped)
+            self.assertNotIn(secret_token, dumped)
+            self.assertNotIn("sensitive-session-cookie", dumped)
+
+        # 2. Unauthorized (invalid credentials)
+        fail_routes = {
+            ("GET", "/"): (200, {}, {"app": "Gateway Dev"}),
+            ("POST", "/api/v1/auth/login"): (
+                401,
+                {},
+                {"message": f"Invalid password {secret_pass}"},
+            ),
+        }
+        with FakeServer(fail_routes) as server:
+            config = config_module.load_integration_config(
+                {
+                    "AQABSI_TARGET_BASE_URL": server.base_url,
+                    "AQABSI_TARGET_AUTH_MODE": "web_login",
+                    "AQABSI_TEST_USERNAME": "qa_dev_user",
+                    "AQABSI_TEST_PASSWORD": secret_pass,
+                    "AQABSI_TARGET_LOGIN_PATH": "/api/v1/auth/login",
+                }
+            )
+            result = http_module.verify_target_app(config.target)
+            self.assertEqual(result.status, "unauthorized")
+            dumped = json.dumps(result.to_dict())
+            self.assertNotIn(secret_pass, dumped)
+
+        # 3. Unreachable target
+        config_unreachable = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "http://127.0.0.1:1",
+                "AQABSI_TARGET_AUTH_MODE": "web_login",
+                "AQABSI_TEST_USERNAME": "qa_dev_user",
+                "AQABSI_TEST_PASSWORD": secret_pass,
+            }
+        )
+        result_unreachable = http_module.verify_target_app(config_unreachable.target)
+        self.assertEqual(result_unreachable.status, "unreachable")
+        self.assertNotIn(secret_pass, json.dumps(result_unreachable.to_dict()))
+
+        # 4. Production target without explicit override is blocked (forbidden)
+        config_prod = config_module.load_integration_config(
+            {
+                "AQABSI_TARGET_BASE_URL": "https://gateway.uii.ac.id",
+                "AQABSI_TARGET_AUTH_MODE": "web_login",
+                "AQABSI_TEST_USERNAME": "qa_dev_user",
+                "AQABSI_TEST_PASSWORD": secret_pass,
+            }
+        )
+        result_prod = http_module.verify_target_app(config_prod.target)
+        self.assertEqual(result_prod.status, "forbidden")
+        self.assertTrue(any("production" in err.lower() for err in result_prod.errors))
 
 
 if __name__ == "__main__":

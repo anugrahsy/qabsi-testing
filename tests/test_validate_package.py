@@ -84,6 +84,9 @@ class ValidatePackageTest(unittest.TestCase):
         self.assertEqual(values["AQABSI_CONFLUENCE_PAT"], "")
         self.assertEqual(values["AQABSI_CLICKUP_API_TOKEN"], "")
         self.assertEqual(values["AQABSI_CLICKUP_AUTH_MODE"], "personal")
+        self.assertEqual(values["AQABSI_TEST_PASSWORD"], "")
+        self.assertEqual(values["AQABSI_TEST_TOKEN"], "")
+        self.assertEqual(values["AQABSI_TARGET_AUTH_MODE"], "web_login")
 
     def test_validator_rejects_secret_valued_integration_template(self):
         with tempfile.TemporaryDirectory() as tmp:

@@ -9,7 +9,7 @@ import os
 from typing import Sequence
 
 from integration_config import build_readiness, load_integration_config, redact
-from integration_http import verify_clickup, verify_confluence
+from integration_http import verify_clickup, verify_confluence, verify_target_app
 
 
 def _human_message(payload: dict[str, object]) -> str:
@@ -27,18 +27,34 @@ def _human_message(payload: dict[str, object]) -> str:
         for error in errors if isinstance(errors, list) else []:
             lines.append(f"  Error: {error}")
         if status in {"missing", "invalid", "unauthorized", "forbidden", "unreachable"}:
-            lines.append(f"  Setup: {item.get('setup_url')}")
+            setup_target = item.get("setup_guidance") or item.get("setup_url")
+            if setup_target:
+                lines.append(f"  Setup: {setup_target}")
         if status == "verified":
             identity = item.get("identity", {})
             destination = item.get("destination", {})
             if isinstance(identity, dict):
-                identity_label = identity.get("display_name") or identity.get("id")
+                identity_label = (
+                    identity.get("display_name")
+                    or identity.get("username")
+                    or identity.get("id")
+                )
                 if identity_label:
                     lines.append(f"  Verified identity: {identity_label}")
             if isinstance(destination, dict):
-                destination_label = destination.get("name") or destination.get("key") or destination.get("id")
+                destination_label = (
+                    destination.get("name")
+                    or destination.get("key")
+                    or destination.get("id")
+                    or destination.get("base_url")
+                )
                 if destination_label:
-                    lines.append(f"  Verified destination: {destination_label}")
+                    mode_suffix = (
+                        f" (mode: {destination.get('auth_mode')})"
+                        if destination.get("auth_mode")
+                        else ""
+                    )
+                    lines.append(f"  Verified destination: {destination_label}{mode_suffix}")
         options = item.get("configuration_options", {})
         if status == "missing" and isinstance(options, dict):
             for option, names in options.items():
@@ -53,7 +69,10 @@ def _human_message(payload: dict[str, object]) -> str:
                 + str(assignment.get("variable"))
                 + " (needed to assign tasks automatically)"
             )
-    lines.append("Never paste API tokens into chat or commit them to a repository.")
+        auth_scope = item.get("authorization_scope")
+        if auth_scope and status in {"ready", "missing"}:
+            lines.append(f"  Scope: {auth_scope}")
+    lines.append("Never paste credentials, passwords, or API tokens into chat or commit them to a repository.")
     return "\n".join(lines)
 
 
@@ -62,8 +81,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument(
         "--provider",
         action="append",
-        choices=("confluence", "clickup"),
-        help="Check only the selected provider; repeat to select both.",
+        choices=("confluence", "clickup", "target"),
+        help="Check only the selected provider; repeat to select multiple.",
     )
     parser.add_argument("--json", action="store_true", help="Emit machine-readable JSON.")
     parser.add_argument(
@@ -83,6 +102,8 @@ def main(argv: Sequence[str] | None = None) -> int:
             providers["confluence"].update(verify_confluence(config.confluence).to_dict())
         if "clickup" in providers and providers["clickup"].get("status") == "ready":
             providers["clickup"].update(verify_clickup(config.clickup).to_dict())
+        if "target" in providers and providers["target"].get("status") == "ready":
+            providers["target"].update(verify_target_app(config.target).to_dict())
     safe_payload = redact(payload, config.secrets)
     if args.json:
         print(json.dumps(safe_payload, ensure_ascii=False, indent=2, sort_keys=True))

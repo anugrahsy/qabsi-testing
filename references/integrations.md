@@ -14,7 +14,22 @@ python3 scripts/check_integrations.py --json
 
 Offline readiness does not prove access. When live publication is in scope and network access is authorized, run `python3 scripts/check_integrations.py --verify --json` to perform bounded read-only identity and destination checks. Missing or invalid publication configuration never blocks local analysis, testing, spreadsheet generation, or draft generation.
 
-Configuration is supplied only through the documented `AQABSI_CONFLUENCE_*` and `AQABSI_CLICKUP_*` environment variables. Use [`assets/templates/integrations.env.example`](../assets/templates/integrations.env.example) for variable names. Do not paste token values into chat, source code, command history, PRDs, reports, or committed files.
+Configuration is supplied only through the documented `AQABSI_CONFLUENCE_*`, `AQABSI_CLICKUP_*`, and target test variables (`AQABSI_TARGET_*`, `AQABSI_TEST_*`). Use [`assets/templates/integrations.env.example`](../assets/templates/integrations.env.example) for variable names. Do not paste passwords or token values into chat, source code, command history, PRDs, reports, or committed files.
+
+## Target application authentication
+
+When testing authenticated routes or functional workflows on a target deployment (development, staging, or local test environment), configure test account credentials separately from documentation platforms:
+
+- `AQABSI_TARGET_BASE_URL`: Base URL of the target application (HTTPS or loopback HTTP). Must belong to a non-production development or staging host unless explicit test authorization is provided.
+- `AQABSI_TARGET_AUTH_MODE`: Authentication mode (`web_login`, `bearer_token`, `basic_auth`, `sso_manual_handoff`, or `none`).
+- `AQABSI_TEST_USERNAME`: Dedicated test account username.
+- `AQABSI_TEST_PASSWORD`: Test account password. Transmitted only during verification, redacted from all outputs, logs, artifacts, and receipts.
+- `AQABSI_TEST_TOKEN`: API token or Bearer token (when `bearer_token` mode is selected).
+- `AQABSI_TARGET_LOGIN_PATH`: Custom login route (defaults to `/login`).
+
+Preflight verifies reachability and performs a single controlled login smoke test. Session cookies and tokens are kept in memory only during testing and never echoed in reports or receipts. For SSO or interactive MFA, use `sso_manual_handoff`.
+
+Single-account credentials enable authenticated functional testing. Multi-role/IDOR testing requires dedicated role credentials; unconfigured roles are marked as blocked rather than guessed.
 
 ## GitLab BSI UII
 

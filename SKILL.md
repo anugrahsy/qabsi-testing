@@ -36,7 +36,7 @@ Interpret the result immediately:
 - Exit `2`: tell the user which exact environment variable names are missing, include the returned official setup links, and continue local analysis/testing/draft generation. Block only the affected live publication.
 - Exit `3` or `4`: report invalid configuration or provider verification failure without printing secret values. Continue work that does not need that provider.
 
-Never request a token value in chat. Direct the user to an approved secret manager or environment injection method and the names-only template at `assets/templates/integrations.env.example`.
+Never request a password or token value in chat. Direct the user to an approved secret manager or environment injection method and the names-only template at `assets/templates/integrations.env.example` for publishing integration tokens (`AQABSI_CONFLUENCE_*`, `AQABSI_CLICKUP_*`) and target test credentials (`AQABSI_TARGET_*`, `AQABSI_TEST_*`).
 
 Before execution, also establish:
 

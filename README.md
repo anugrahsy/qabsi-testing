@@ -33,6 +33,7 @@ Konfigurasi minimal:
 - Confluence Cloud: deployment, base URL, email, [API token Atlassian](https://id.atlassian.com/manage-profile/security/api-tokens), dan Space ID.
 - Confluence Data Center: deployment, base URL, PAT yang diterbitkan deployment internal, dan Space key.
 - ClickUp: auth mode, [personal API token ClickUp](https://app.clickup.com/settings/apps) atau OAuth access token, Workspace ID, dan List ID.
+- Target Application (Environment Dev/Staging): base URL target (`AQABSI_TARGET_BASE_URL`), auth mode (`AQABSI_TARGET_AUTH_MODE`), test username (`AQABSI_TEST_USERNAME`), dan password (`AQABSI_TEST_PASSWORD`). Password diinjeksi via secret manager/terminal, tidak pernah disimpan atau ditampilkan di chat.
 - Assignment: ownership registry yang sudah direview dan berisi platform user ID, bukan credential.
 
 Setelah environment disiapkan, verifikasi akun dan destination dengan request read-only:
