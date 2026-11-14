@@ -2,7 +2,7 @@
 name: aqabsi-testing
 description: Plan and execute evidence-backed QA for web apps, APIs, services, and data systems, including professional source-derived PRDs, traceable test cases, authorized testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for AQABSI or AI QA BSI workflows; do not publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
 metadata:
-  version: "2.3.0"
+  version: "2.3.1"
   organization: "BSI UII"
 ---
 
@@ -25,9 +25,9 @@ For every mode, read `references/execution-safety.md` first. Then read only the 
 
 ## Mandatory preflight
 
-Read `references/onboarding.md` and ask the preflight questions before starting: target & environment, akun uji (username/password), Confluence (space/parent), ClickUp (workspace/list), dan scope BE/FE — jangan asumsikan; pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Selalu siapkan output web report HTML (dashboard interaktif via localhost) + PRD + test case CSV/XLSX + draft Confluence/ClickUp. Gunakan `scripts/generate_dashboard.py` untuk dashboard self-contained, `scripts/executor.py` untuk eksekusi API deterministik, `scripts/flakiness.py` untuk deteksi flaky, dan `scripts/change_impact.py` untuk pemetaan change-impact. Untuk login target aplikasi, lihat `references/auth-adapter.md` dan `scripts/auth_login.py`.
+Read `references/onboarding.md` and collect the full preflight configuration before starting: target & environment, akun uji (username/password/token), Confluence (email/token/space), ClickUp (token/workspace/list), dan scope BE/FE — jangan asumsikan; kalau `.env` kosong, tanyakan nilainya lalu tulis via `scripts/configure_env.py`. Pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Selalu siapkan output web report HTML (dashboard interaktif via localhost) + PRD + test case CSV/XLSX + draft Confluence/ClickUp. Gunakan `scripts/generate_dashboard.py` untuk dashboard self-contained, `scripts/executor.py` untuk eksekusi API deterministik, `scripts/flakiness.py` untuk deteksi flaky, dan `scripts/change_impact.py` untuk pemetaan change-impact. Untuk login target aplikasi, lihat `references/auth-adapter.md` dan `scripts/auth_login.py`.
 
-Then resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`. Credentials live in a local, gitignored `.env` at `$AQABSI_SKILL_ROOT/.env` (non-secret defaults are pre-filled; secret values are filled once by the operator). Run the offline integration check before source discovery, sourcing `.env` first:
+Then resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`. Credentials live in a local, gitignored `.env` at `$AQABSI_SKILL_ROOT/.env` (non-secret defaults are pre-filled; secret values are collected from the operator during preflight — see `references/onboarding.md` — and written via `scripts/configure_env.py`). Run the offline integration check before source discovery, sourcing `.env` first:
 
 ```bash
 (cd "$AQABSI_SKILL_ROOT" && set -a && [ -f .env ] && . ./.env; set +a; python3 scripts/check_integrations.py --json)
@@ -36,7 +36,7 @@ Then resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`. Cr
 Interpret the result immediately:
 
 - Exit `0`: configuration is complete offline. Use `--verify` only when read-only provider verification is relevant and network access is authorized.
-- Exit `2`: tell the user which exact environment variable names are missing, include the returned official setup links, and continue local analysis/testing/draft generation. Block only the affected live publication.
+- Exit `2`: tell the user which exact environment variable names are missing and the official setup links, then **ask the user for those values and persist them to `.env` via `scripts/configure_env.py`** before proceeding to any authenticated execution or live publication. Do not silently continue — offer to collect the missing credentials up front. Only read-only local analysis/draft generation may proceed while credentials are still missing.
 - Exit `3` or `4`: report invalid configuration or provider verification failure without printing secret values. Continue work that does not need that provider.
 
 Secrets stay in `.env` only. Never write a password or token into PRDs, manifests, reports, memory, or committed files. The names-only template at `assets/templates/integrations.env.example` lists every supported variable (`AQABSI_CONFLUENCE_*`, `AQABSI_CLICKUP_*`, `AQABSI_TARGET_*`, `AQABSI_TEST_*`).

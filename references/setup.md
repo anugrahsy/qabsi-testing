@@ -8,9 +8,9 @@ From the AQABSI package root, run the offline preflight at the beginning of ever
 python3 scripts/check_integrations.py --json
 ```
 
-The command performs no network request unless `--verify` is added. Exit `2` means publication setup is incomplete: communicate the exact missing variable names and setup links immediately, then continue local QA and draft generation. Exit `3` means configuration is invalid. Do not ask the user to paste a token into chat.
+The command performs no network request unless `--verify` is added. Exit `2` means configuration is incomplete: communicate the exact missing variable names and setup links, then **ask the operator for those values and persist them to the gitignored `.env` via `scripts/configure_env.py`** before any authenticated execution or live publication. Only read-only local QA and draft generation may continue while credentials are still missing. Exit `3` means configuration is invalid.
 
-Use [`assets/templates/integrations.env.example`](../assets/templates/integrations.env.example) as a names-only reference. Supply real secret values through an approved secret manager or process environment, never a committed `.env` file. Installation itself stays credential-free.
+Use [`assets/templates/integrations.env.example`](../assets/templates/integrations.env.example) as a names-only reference. Supply real secret values into the **gitignored** `.env` (via `scripts/configure_env.py`, an approved secret manager, or process environment) — never commit `.env`. Installation itself stays credential-free.
 
 After the offline check, discover available tools/connectors and ask only for decisions that materially affect execution:
 

@@ -24,16 +24,16 @@ Skill akan menjalankan preflight ini otomatis pada awal workflow. Pengguna termi
 python3 scripts/check_integrations.py --json
 ```
 
-Preflight default hanya membaca nama environment variable dan **tidak menghubungi Confluence atau ClickUp**. Hasil `missing` akan menyebutkan konfigurasi yang belum tersedia sebelum testing panjang dimulai. Kondisi ini tidak menghentikan analisis source, pembuatan PRD/test case, eksekusi test yang sudah diotorisasi, spreadsheet, atau draft lokal; hanya publikasi live pada provider tersebut yang diblokir.
+Preflight default hanya membaca nama environment variable dan **tidak menghubungi Confluence atau ClickUp**. Hasil `missing` akan menyebutkan konfigurasi yang belum tersedia sebelum testing panjang dimulai — dan AQABSI akan **menanyakan nilainya** lalu menulisnya ke `.env` (gitignored) via `scripts/configure_env.py`, bukan lanjut diam-diam. Selama kredensial belum terisi, analisis source, pembuatan PRD/test case, spreadsheet, dan draft lokal tetap bisa berjalan; eksekusi terautentikasi dan publikasi live diblokir sampai kredensial terisi.
 
-Gunakan [`assets/templates/integrations.env.example`](assets/templates/integrations.env.example) sebagai daftar nama konfigurasi. Template sengaja tidak berisi token. Nilai asli harus diberikan melalui secret manager atau process environment yang disetujui dan tidak boleh ditempel di chat atau di-commit.
+Gunakan [`assets/templates/integrations.env.example`](assets/templates/integrations.env.example) sebagai daftar nama konfigurasi. Template sengaja tidak berisi token. Nilai asli ditulis ke `.env` (gitignored) via `scripts/configure_env.py` atau lewat secret manager/process environment — nilai **tidak boleh di-commit** dan tidak boleh masuk PRD/report/memory.
 
 Konfigurasi minimal:
 
 - Confluence Cloud: deployment, base URL, email, [API token Atlassian](https://id.atlassian.com/manage-profile/security/api-tokens), dan Space ID.
 - Confluence Data Center: deployment, base URL, PAT yang diterbitkan deployment internal, dan Space key.
 - ClickUp: auth mode, [personal API token ClickUp](https://app.clickup.com/settings/apps) atau OAuth access token, Workspace ID, dan List ID.
-- Target Application (Environment Dev/Staging): base URL target (`AQABSI_TARGET_BASE_URL`), auth mode (`AQABSI_TARGET_AUTH_MODE`), test username (`AQABSI_TEST_USERNAME`), dan password (`AQABSI_TEST_PASSWORD`). Password diinjeksi via secret manager/terminal, tidak pernah disimpan atau ditampilkan di chat.
+- Target Application (Environment Dev/Staging): base URL target (`AQABSI_TARGET_BASE_URL`), auth mode (`AQABSI_TARGET_AUTH_MODE`), test username (`AQABSI_TEST_USERNAME`), dan password (`AQABSI_TEST_PASSWORD`). Password ditulis ke `.env` (gitignored) via `scripts/configure_env.py`; tidak pernah masuk PRD/report/memory/commit.
 - Assignment: ownership registry yang sudah direview dan berisi platform user ID, bukan credential.
 
 Setelah environment disiapkan, verifikasi akun dan destination dengan request read-only:
@@ -514,7 +514,7 @@ Tersedia dan tervalidasi di package lokal:
 - secret redaction;
 - package validator dan automated tests;
 - login forward-test pilot.
-- identitas AQABSI 2.2.0 dan invariant metadata;
+- identitas AQABSI 2.3.1 dan invariant metadata;
 - adaptive professional PRD/test-case quality engine;
 - machine-readable module registry dan layered BSI profiles;
 - web-only E2E contract dan GitLab CI dry-run template;

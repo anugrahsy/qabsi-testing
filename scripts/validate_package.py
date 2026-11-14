@@ -16,7 +16,7 @@ BANNED_OPERATIONAL_PLACEHOLDERS = ("template menyusul", "format bebas dulu")
 CANONICAL_SKILL_NAME = "aqabsi-testing"
 CANONICAL_PLUGIN_NAME = "aqabsi"
 CANONICAL_DISPLAY_NAME = "AQABSI — AI QA BSI"
-CANONICAL_VERSION = "2.2.0"
+CANONICAL_VERSION = "2.3.1"
 LEGACY_IDENTITY_PATTERN = re.compile(r"(?i)(?<![a-z0-9])q" + r"absi(?=$|[^a-z0-9])")
 APPROVED_LEGACY_REPOSITORY_SLUG = "anugrahsy/" + "q" + "absi-testing"
 PROTECTED_POLICY_VALUES = {
@@ -295,8 +295,19 @@ def validate(root: Path) -> list[str]:
                 if not list(path.parent.glob(cleaned)):
                     errors.append(f"{path}: missing local reference {target}")
                 continue
-            if cleaned.startswith(("references/", "assets/", "schemas/", "scripts/", "skills/")):
+            if cleaned.startswith(("assets/", "schemas/", "scripts/", "skills/")):
                 resolved = (root / cleaned).resolve()
+            elif cleaned.startswith("references/"):
+                # "references/x" resolves against the file's own skill directory:
+                #   root SKILL.md            -> root/references/x
+                #   skills/<s>/SKILL.md      -> skills/<s>/references/x
+                #   skills/<s>/references/*.md (already inside refs) -> skills/<s>/references/x
+                if path.parent.name == "references":
+                    resolved = (path.parent / cleaned[len("references/"):]).resolve()
+                else:
+                    resolved = (path.parent / cleaned).resolve()
+                if not resolved.exists():
+                    resolved = (root / cleaned).resolve()
             else:
                 resolved = (path.parent / cleaned).resolve()
             try:

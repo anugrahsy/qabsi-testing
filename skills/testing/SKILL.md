@@ -5,7 +5,7 @@ description: Use when a PRD and test cases already exist and QA must reconcile t
 
 # Execute Testing
 
-0. Read `../../references/onboarding.md` dan **TANYAKAN preflight dulu** (jangan asumsikan): target & environment, akun uji (username/password), Confluence (base URL/email/token/space), ClickUp (token/workspace/list), scope BE/FE, akses browser FE. Pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Kredensial dipakai in-session saja (inject env var), jangan disimpan ke file/PRD/report/memory.
+0. Read `../../references/onboarding.md` dan **TANYAKAN preflight dulu** (jangan asumsikan): target & environment, akun uji (username/password), Confluence (base URL/email/token/space), ClickUp (token/workspace/list), scope BE/FE, akses browser FE. Pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Kredensial ditulis ke `.env` gitignored via `scripts/configure_env.py`; jangan disimpan ke PRD/report/memory/commit.
 1. Read `../../references/execution-safety.md`; pin requirements, source commit/MR, target, environment, identities, scope, cleanup, evidence policy, and stop conditions.
 2. Reconcile PRD, contract, and test cases. Record ambiguity instead of silently choosing an expected result.
 3. Use `../../references/test-strategy.md` and `../../references/skill-tree.md` to identify missing high-risk coverage without expanding beyond authorization.

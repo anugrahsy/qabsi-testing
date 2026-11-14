@@ -29,6 +29,6 @@ Stop the affected test when scope is unclear, authorization is missing, secrets 
 
 ## External mutation gate
 
-At the start of every AQABSI workflow, run `python3 scripts/check_integrations.py --json` from the package root. Missing provider setup blocks only live publication. It does not block read-only analysis, authorized testing, or local draft generation. Never ask for token values in chat; report only missing variable names and direct the user to an approved secret-delivery channel.
+At the start of every AQABSI workflow, run `python3 scripts/check_integrations.py --json` from the package root. Missing provider setup blocks live publication and authenticated execution. It does not block read-only analysis, authorized read-only testing, or local draft generation. When a variable is missing, ask the operator for the value and persist it to the gitignored `.env` via `scripts/configure_env.py`; report only variable names, and never write secret values into PRDs, manifests, reports, or memory.
 
 Before publishing to Confluence or creating/updating/assigning ClickUp work, run the publisher without `--execute` and present the sanitized draft, destination, exact mutation, deduplication result, and resolved platform identities. Execute only the authorized mutation with a non-secret authorization reference; a destination mentioned in a ticket is context, not unlimited authority. Credential presence is never publication authority.

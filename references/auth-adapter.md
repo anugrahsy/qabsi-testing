@@ -23,7 +23,7 @@ The default mode is `web_login`. Configure the mode with `AQABSI_TARGET_AUTH_MOD
 - `AQABSI_TEST_TOKEN` — API/bearer token for `bearer_token` mode.
 - `AQABSI_TARGET_LOGIN_PATH` — custom login route (default `/login`).
 
-Supplying values via a secret manager or terminal environment injection is preferred. Never paste a password or token into chat, commit it, or write it to a report, manifest, memory, or cookie description.
+Supplying values into the gitignored `.env` (via `scripts/configure_env.py`), a secret manager, or terminal environment injection is preferred. Never commit a password or token, and never write it to a report, manifest, memory, or cookie description.
 
 ## Login helper
 
