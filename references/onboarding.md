@@ -20,7 +20,7 @@ Baca dulu memory `aqabsi-qa-workflow` (jika tersedia di memori proyek), lalu **T
 
 ## Desain web report
 
-Gunakan skill `antislop` (plugin `antislop@anti-slop`) agar desain web report profesional — bukan generik/AI-slop: spacing, kontras, tipografi, dan warna yang rapi dan konsisten. Dashboard self-contained bisa dibuat langsung dengan `scripts/generate_dashboard.py`.
+Gunakan skill `antislop` (plugin `antislop@anti-slop`) agar desain web report profesional — bukan generik/AI-slop: spacing, kontras, tipografi, dan warna yang rapi dan konsisten. Naikkan standar visual ke quality-bar `/awwwards` (skill `awwwards`, referensi `references/quality-bar.md`) dan nilai hasil akhirnya dengan `/jury` untuk daftar perbaikan ter-ranking. Dashboard self-contained tetap dibuat langsung dengan `scripts/generate_dashboard.py`.
 
 ## Autentikasi target aplikasi
 
