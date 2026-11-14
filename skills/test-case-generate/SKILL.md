@@ -5,6 +5,7 @@ description: Use when professional risk-based test cases are requested from a PR
 
 # Generate Test Cases
 
+0. Read `../../references/onboarding.md` dan **TANYAKAN preflight dulu** (jangan asumsikan): target & environment, akun uji (username/password), Confluence (base URL/email/token/space), ClickUp (token/workspace/list), scope BE/FE, akses browser FE. Pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Kredensial dipakai in-session saja (inject env var), jangan disimpan ke file/PRD/report/memory.
 1. Establish the authoritative requirement sources and label gaps or contradictions; do not invent expected behavior.
 2. Read `../../references/rules.md` and select layers with `../../references/test-strategy.md`.
 3. Load only relevant indexes/modules through `../../references/skill-tree.md`.

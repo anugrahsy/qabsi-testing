@@ -5,6 +5,7 @@ description: Use when a professional evidence-backed PRD is requested from ticke
 
 # Generate Professional PRD
 
+0. Read `../../references/onboarding.md` dan **TANYAKAN preflight dulu** (jangan asumsikan): target & environment, akun uji (username/password), Confluence (base URL/email/token/space), ClickUp (token/workspace/list), scope BE/FE, akses browser FE. Pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Kredensial dipakai in-session saja (inject env var), jangan disimpan ke file/PRD/report/memory.
 1. Read `../../references/execution-safety.md` and confirm the allowed evidence sources.
 2. Pin repositories/commits and inventory tickets, contracts, code paths, roles, validations, data, interfaces, states, errors, feature flags, integrations, and existing tests without reading secrets.
 3. Reconcile contradictions using the evidence hierarchy in `../../references/prd-standard.md`.
