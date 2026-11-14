@@ -427,6 +427,109 @@ def build_markdown(data: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+def build_confluence_body(data: dict[str, Any]) -> str:
+    """Defects-only Confluence body: publish only failed cases so reviewers see what to fix.
+
+    Full results (pass + fail + blocked + not_run) remain in the local dashboard,
+    CSV, and XLSX artifacts. This mirrors the ClickUp drafts, which already filter
+    to ``status == "fail"`` only.
+    """
+    counts = _summary(data["test_cases"])
+    source = data["source"]
+    failed_cases = [case for case in data["test_cases"] if case["status"] == "fail"]
+    lines = [
+        f"# QA Report (Defect) — {data['title']}",
+        "",
+        "## Run information",
+        "",
+        f"- Run ID: `{data['run_id']}`",
+        f"- Module: {data['module']}",
+        f"- Environment: {data['environment']}",
+        f"- Target: {data.get('target') or 'Not recorded'}",
+        f"- Repository: {source['repository']}",
+        f"- Commit: `{source['commit_sha']}`",
+        f"- Started: {data['started_at']}",
+        f"- Finished: {data.get('finished_at') or 'Not finished'}",
+        "",
+        "## Summary (defects only)",
+        "",
+        f"- Total test cases: {len(data['test_cases'])}",
+        f"- Failed (perlu diperbaiki): {counts['fail']}",
+        f"- Pass: {counts['pass']} | Blocked: {counts['blocked']} | Not run: {counts['not_run']} | Skipped: {counts['skipped']} | Flaky: {counts['flaky']} | Environment error: {counts['environment_error']}",
+        "",
+        "> Halaman ini hanya memuat hal yang perlu diperbaiki (test case gagal + security finding terkonfirmasi). Hasil lengkap (pass + fail + blocked + not_run) tersedia di dashboard & spreadsheet lokal.",
+        "",
+        "## Failed test case execution logs",
+        "",
+    ]
+    if failed_cases:
+        for case in failed_cases:
+            lines.extend(
+                [
+                    f"### {case['id']} — {case['scenario']}",
+                    "",
+                    f"**Domain:** {resolve_domain(case)}",
+                    f"**Layer:** {case['layer']}",
+                    f"**Feature:** {case['feature']}",
+                    f"**Priority / severity:** {case['priority']} / {case.get('severity') or '—'}",
+                    f"**Expected:** {case['expected_result']}",
+                    f"**Actual result:** {case['actual_result']}",
+                    "",
+                    "**Steps:**",
+                    "",
+                    *[f"{index}. {step}" for index, step in enumerate(case["steps"], start=1)],
+                    "",
+                    "**Evidence:**",
+                    *([f"- {item}" for item in case["evidence"]] or ["- Not recorded"]),
+                    "",
+                    f"**Owner team:** {case['owner_team']}",
+                    "",
+                ]
+            )
+    else:
+        lines.append("No failed test case was recorded for this run.")
+
+    security_findings = data.get("security_findings") or []
+    lines.extend(["", "## Security and access-control findings", ""])
+    if security_findings:
+        lines.extend(
+            [
+                "| ID | Classification | Finding | Target | Expected | Actual | Error location | Evidence |",
+                "|---|---|---|---|---|---|---|---|",
+            ]
+        )
+        for finding in security_findings:
+            clean = lambda text: str(text or "—").replace("|", "\\|").replace("\n", "<br>")
+            lines.append(
+                "| "
+                + " | ".join(
+                    clean(value)
+                    for value in (
+                        finding.get("id"),
+                        finding.get("classification"),
+                        finding.get("title"),
+                        finding.get("target"),
+                        finding.get("expected_result"),
+                        finding.get("actual_result"),
+                        finding.get("error_location"),
+                        ", ".join(finding.get("evidence", [])),
+                    )
+                )
+                + " |"
+            )
+    else:
+        lines.append("No normalized security finding was recorded for this run.")
+    lines.extend(
+        [
+            "## Publication state",
+            "",
+            "This artifact is a sanitized draft. Publishing and assignment require explicit authorization.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def write_csv(path: Path, cases: list[dict[str, Any]]) -> None:
     with path.open("w", encoding="utf-8-sig", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=CSV_COLUMNS)
@@ -659,7 +762,7 @@ def generate(input_path: Path, output_dir: Path) -> None:
             "parent_page_id": None,
             "suggested_title": f"QA Report — {data['run_id']} — {data['title']}",
             "body_format": "markdown",
-            "body": report,
+            "body": build_confluence_body(data),
         }
         (temporary / "confluence-draft.json").write_text(json.dumps(confluence, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (temporary / "clickup-drafts.json").write_text(json.dumps(build_clickup_drafts(data), ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
