@@ -26,10 +26,10 @@ For every mode, read `references/execution-safety.md` first. Then read only the 
 
 Read `references/onboarding.md` and ask the preflight questions before starting: target & environment, akun uji (username/password), Confluence (space/parent), ClickUp (workspace/list), dan scope BE/FE — jangan asumsikan; pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Selalu siapkan output web report HTML (dashboard interaktif via localhost) + PRD + test case CSV/XLSX + draft Confluence/ClickUp. Gunakan `scripts/generate_dashboard.py` untuk dashboard self-contained, `scripts/executor.py` untuk eksekusi API deterministik, `scripts/flakiness.py` untuk deteksi flaky, dan `scripts/change_impact.py` untuk pemetaan change-impact. Untuk login target aplikasi, lihat `references/auth-adapter.md` dan `scripts/auth_login.py`.
 
-Then resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`, and run the offline integration check before source discovery:
+Then resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`. Credentials live in a local, gitignored `.env` at `$AQABSI_SKILL_ROOT/.env` (non-secret defaults are pre-filled; secret values are filled once by the operator). Run the offline integration check before source discovery, sourcing `.env` first:
 
 ```bash
-(cd "$AQABSI_SKILL_ROOT" && python3 scripts/check_integrations.py --json)
+(cd "$AQABSI_SKILL_ROOT" && set -a && [ -f .env ] && . ./.env; set +a; python3 scripts/check_integrations.py --json)
 ```
 
 Interpret the result immediately:
@@ -38,7 +38,7 @@ Interpret the result immediately:
 - Exit `2`: tell the user which exact environment variable names are missing, include the returned official setup links, and continue local analysis/testing/draft generation. Block only the affected live publication.
 - Exit `3` or `4`: report invalid configuration or provider verification failure without printing secret values. Continue work that does not need that provider.
 
-Never request a password or token value in chat. Direct the user to an approved secret manager or environment injection method and the names-only template at `assets/templates/integrations.env.example` for publishing integration tokens (`AQABSI_CONFLUENCE_*`, `AQABSI_CLICKUP_*`) and target test credentials (`AQABSI_TARGET_*`, `AQABSI_TEST_*`).
+Secrets stay in `.env` only. Never write a password or token into PRDs, manifests, reports, memory, or committed files. The names-only template at `assets/templates/integrations.env.example` lists every supported variable (`AQABSI_CONFLUENCE_*`, `AQABSI_CLICKUP_*`, `AQABSI_TARGET_*`, `AQABSI_TEST_*`).
 
 Before execution, also establish:
 

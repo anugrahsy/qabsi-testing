@@ -2,3 +2,7 @@
 __pycache__/
 *.py[cod]
 .aqabsi-output/
+
+# Local secrets — never commit
+.env
+.env.*

@@ -1,6 +1,6 @@
 # AQABSI Preflight Onboarding
 
-Baca dulu memory `aqabsi-qa-workflow` (jika tersedia di memori proyek), lalu **TANYAKAN** (jangan asumsikan) hal berikut sebelum mulai eksekusi — **termasuk token/password: minta langsung di chat saat pertama kali** untuk kemudahan. Pakai nilai default dari memory bila user tidak memberikan nilai baru.
+Baca dulu memory `aqabsi-qa-workflow` (jika tersedia di memori proyek), lalu **TANYAKAN** (jangan asumsikan) hal **non-secret** berikut sebelum mulai eksekusi: mode, target/modul, scope BE/FE, dan environment. **Nilai secret (token/password/email akun uji) tidak ditanya ulang** — sudah disimpan di file `.env` lokal (gitignored) di root skill dan di-source otomatis saat preflight. Pakai nilai default dari memory/`.env` bila user tidak memberikan nilai baru.
 
 1. **Target & environment** — URL gateway/API + dev / staging / prod.
 2. **Akun uji** — username + password.
@@ -9,7 +9,7 @@ Baca dulu memory `aqabsi-qa-workflow` (jika tersedia di memori proyek), lalu **T
 5. **Scope** — BE (backend/API) / FE (frontend/UI) / keduanya.
 6. **Akses browser FE/UI** — apakah target FE/UI bisa dibuka via browser untuk runtime exploration? Kalau tidak bisa → runtime exploration = `blocked` (fallback ke baca kode).
 
-> **Cara pakai kredensial (secret):** nilai token/password dipakai **in-session saja** — inject ke environment variable pada tiap command Bash (mis. `AQABSI_CLICKUP_API_TOKEN=... python3 scripts/...`). JANGAN simpan ke PRD/manifest/report/memory/file apa pun; token hanya muncul di transcript sesi dan tidak di-persist.
+> **Cara pakai kredensial (secret):** simpan di `$AQABSI_SKILL_ROOT/.env` (gitignored, diisi sekali). Preflight meng-`source` file itu otomatis (`set -a; . ./.env; set +a`), jadi script membaca dari environment tanpa token muncul di chat. JANGAN tulis token/password ke PRD/manifest/report/memory/file yang ter-commit, dan jangan commit `.env`. Template nama variabel: `assets/templates/integrations.env.example`.
 
 ## Output yang SELALU dibuat setelah eksekusi
 
