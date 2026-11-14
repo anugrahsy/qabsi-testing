@@ -2,7 +2,7 @@
 name: aqabsi-testing
 description: Plan and execute evidence-backed QA for web apps, APIs, services, and data systems, including professional source-derived PRDs, traceable test cases, authorized testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for AQABSI or AI QA BSI workflows; do not publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
 metadata:
-  version: "2.3.1"
+  version: "2.3.2"
   organization: "BSI UII"
 ---
 

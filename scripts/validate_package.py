@@ -16,7 +16,7 @@ BANNED_OPERATIONAL_PLACEHOLDERS = ("template menyusul", "format bebas dulu")
 CANONICAL_SKILL_NAME = "aqabsi-testing"
 CANONICAL_PLUGIN_NAME = "aqabsi"
 CANONICAL_DISPLAY_NAME = "AQABSI — AI QA BSI"
-CANONICAL_VERSION = "2.3.1"
+CANONICAL_VERSION = "2.3.2"
 LEGACY_IDENTITY_PATTERN = re.compile(r"(?i)(?<![a-z0-9])q" + r"absi(?=$|[^a-z0-9])")
 APPROVED_LEGACY_REPOSITORY_SLUG = "anugrahsy/" + "q" + "absi-testing"
 PROTECTED_POLICY_VALUES = {

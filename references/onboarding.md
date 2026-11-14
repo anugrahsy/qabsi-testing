@@ -30,7 +30,7 @@ Baca dulu memory `aqabsi-qa-workflow` (jika tersedia di memori proyek), lalu **K
 
 ## Desain web report
 
-Gunakan skill `antislop` (plugin `antislop@anti-slop`) agar desain web report profesional — bukan generik/AI-slop: spacing, kontras, tipografi, dan warna yang rapi dan konsisten. Naikkan standar visual ke quality-bar skill desain bawaan AQABSI (`skills/awwwards/references/quality-bar.md`) dan nilai hasil akhirnya dengan skill juri bawaan (`skills/jury/SKILL.md`) untuk daftar perbaikan ter-ranking. Dashboard self-contained tetap dibuat langsung dengan `scripts/generate_dashboard.py`.
+Dashboard web report **sudah otomatis**: `scripts/generate_dashboard.py` menghasilkan dashboard **nav-menu minimalis-elegan** (halaman Ringkasan / PRD / Hasil Test + drawer detail per test case + dark mode) dengan palette status ter-validasi CVD-safe (dataviz) — tidak perlu koreksi desain manual. Untuk kustomisasi lanjutan (mis. re-skin warna brand), gunakan quality-bar bawaan `skills/awwwards/references/quality-bar.md` sebagai rujukan.
 
 ## Autentikasi target aplikasi
 

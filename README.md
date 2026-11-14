@@ -514,7 +514,7 @@ Tersedia dan tervalidasi di package lokal:
 - secret redaction;
 - package validator dan automated tests;
 - login forward-test pilot.
-- identitas AQABSI 2.3.1 dan invariant metadata;
+- identitas AQABSI 2.3.2 dan invariant metadata;
 - adaptive professional PRD/test-case quality engine;
 - machine-readable module registry dan layered BSI profiles;
 - web-only E2E contract dan GitLab CI dry-run template;
