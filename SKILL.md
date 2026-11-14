@@ -2,7 +2,7 @@
 name: aqabsi-testing
 description: Plan and execute evidence-backed QA for web apps, APIs, services, and data systems, including professional source-derived PRDs, traceable test cases, authorized testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for AQABSI or AI QA BSI workflows; do not publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
 metadata:
-  version: "2.2.0"
+  version: "2.3.0"
   organization: "BSI UII"
 ---
 
@@ -19,6 +19,7 @@ AQABSI (AI QA BSI) is a BSI-wide, risk-based QA orchestrator. It discovers facts
 | Only a PRD is requested | Generate PRD | `skills/prd-generate/SKILL.md` |
 | Only test cases are requested | Generate test cases | `skills/test-case-generate/SKILL.md` |
 | An authorized security assessment is requested | Security assessment | `skills/security-testing/SKILL.md` |
+| A web report, dashboard, or visual QA design is requested | Design & visual QA | `skills/awwwards/SKILL.md` + `skills/jury/SKILL.md` |
 
 For every mode, read `references/execution-safety.md` first. Then read only the referenced domain modules needed for the feature. Do not load the whole knowledge base.
 
