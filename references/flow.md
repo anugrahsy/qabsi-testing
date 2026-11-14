@@ -16,8 +16,8 @@
 
 1. Pin tickets/contracts/repos/commits and record unavailable sources.
 2. Reuse supplied checkouts or safely clone authorized repositories; preserve dirty work and avoid secrets.
-3. Inventory code, contracts, data, roles, states, errors, integrations, and existing tests.
-4. Build an as-is evidence-backed PRD using `prd-standard.md`.
+3. Run [runtime-exploration.md](runtime-exploration.md) when the UI is browser-accessible, then inventory code, contracts, data, roles, states, errors, integrations, and existing tests.
+4. Build an as-is evidence-backed PRD using `prd-standard.md` from runtime observation plus code.
 5. Select risk-based layers using `test-strategy.md`.
 6. Generate traceable test cases using `rules.md`.
 7. Execute authorized tests with real tools and capture sanitized evidence.

@@ -32,6 +32,8 @@ Maximum QA quality comes from selecting the right evidence at the cheapest relia
 | Reliability/observability | Recovery and telemetry evidence | SLO, alert, correlation, audit and failure diagnosis |
 | Usability/localization | Task and content evidence | Clarity, error recovery, locale, timezone, formatting |
 
+The `exploratory` layer doubles as runtime exploration for PRD construction: it collects live-app behavior, state, and error evidence that feeds the PRD evidence hierarchy (`executed runtime evidence` in [prd-standard.md](prd-standard.md)). It is a PRD evidence-collection phase, not a separate mode that ignores the PRD or its traceability chain.
+
 ## Decision rules
 
 1. Prefer unit/component/contract checks for broad combinations; reserve E2E for critical integrated journeys.

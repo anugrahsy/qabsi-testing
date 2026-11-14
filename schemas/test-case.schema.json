@@ -17,6 +17,8 @@
     "module": {"type": "string", "minLength": 1},
     "feature": {"type": "string", "minLength": 1},
     "layer": {"type": "string", "enum": ["static", "unit", "component", "integration", "contract", "api", "e2e", "exploratory", "regression", "smoke", "security", "accessibility", "compatibility", "data", "migration", "resilience", "observability", "performance", "load", "stress", "endurance", "scalability", "reliability", "usability", "localization"]},
+    "domain": {"type": ["string", "null"], "enum": ["BE", "FE", "both", null]},
+    "tag": {"type": ["string", "null"], "enum": ["BE", "FE", "both", null]},
     "technique": {"type": "string", "enum": ["equivalence", "boundary", "decision_table", "state_transition", "pairwise", "scenario", "exploratory_charter", "abuse_case", "contract"]},
     "scenario": {"type": "string", "minLength": 1},
     "preconditions": {"type": "array", "items": {"type": "string"}},

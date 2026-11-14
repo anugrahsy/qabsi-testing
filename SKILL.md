@@ -2,7 +2,7 @@
 name: aqabsi-testing
 description: Plan and execute evidence-backed QA for web apps, APIs, services, and data systems, including professional source-derived PRDs, traceable test cases, authorized testing, security and non-functional scope, spreadsheets, reports, and draft defect tickets. Use for AQABSI or AI QA BSI workflows; do not publish, assign, pentest, load-test, deploy, or mutate production without explicit authorization.
 metadata:
-  version: "2.1.0"
+  version: "2.2.0"
   organization: "BSI UII"
 ---
 
@@ -24,7 +24,9 @@ For every mode, read `references/execution-safety.md` first. Then read only the 
 
 ## Mandatory preflight
 
-At the start of every AQABSI workflow, resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`, then run the offline integration check before source discovery:
+Read `references/onboarding.md` and ask the preflight questions before starting: target & environment, akun uji (username/password), Confluence (space/parent), ClickUp (workspace/list), dan scope BE/FE — jangan asumsikan; pakai default dari memory `aqabsi-qa-workflow` bila tersedia. Selalu siapkan output web report HTML (dashboard interaktif via localhost) + PRD + test case CSV/XLSX + draft Confluence/ClickUp. Gunakan `scripts/generate_dashboard.py` untuk dashboard self-contained, `scripts/executor.py` untuk eksekusi API deterministik, `scripts/flakiness.py` untuk deteksi flaky, dan `scripts/change_impact.py` untuk pemetaan change-impact. Untuk login target aplikasi, lihat `references/auth-adapter.md` dan `scripts/auth_login.py`.
+
+Then resolve `AQABSI_SKILL_ROOT` as the directory containing this `SKILL.md`, and run the offline integration check before source discovery:
 
 ```bash
 (cd "$AQABSI_SKILL_ROOT" && python3 scripts/check_integrations.py --json)
@@ -63,16 +65,17 @@ Only executed, observed checks may receive `pass` or `fail`. Use `blocked`, `ski
 ## Core workflow
 
 0. Run the mandatory integration preflight above and communicate missing setup before beginning the long workflow.
-1. Build a source inventory: ticket, PRD, API contract, repository paths, routes, validation, services, data model, UI, roles, and deployed target.
-2. Create or reconcile the PRD using `references/prd-standard.md`; do not turn implementation defects into requirements.
+1. Build a source inventory: ticket, PRD, API contract, repository paths, routes, validation, services, data model, UI, roles, and deployed target. When the target UI is browser-accessible, run `references/runtime-exploration.md` to collect live-app evidence.
+2. Create or reconcile the PRD using `references/prd-standard.md` from executed runtime evidence plus code; do not turn implementation defects into requirements.
 3. Select testing layers with `references/test-strategy.md` and the indexes in `references/testing-module-*.md`.
 4. Create traceable test cases following `references/rules.md`; map requirement ID → risk → test case ID → evidence → defect fingerprint.
-5. Execute with the narrowest reliable tool: native unit/integration runner, API/contract runner, browser automation, or manual exploration with captured evidence.
-6. Triage failures: product defect, test defect, flaky behavior, environment failure, requirement ambiguity, or accepted limitation.
+5. Execute with the narrowest reliable tool: native unit/integration runner, API/contract runner (`scripts/executor.py` for deterministic API execution), browser automation, or manual exploration with captured evidence.
+6. Triage failures: product defect, test defect, flaky behavior (`scripts/flakiness.py`), environment failure, requirement ambiguity, or accepted limitation. Map changed files to affected test cases with `scripts/change_impact.py`.
 7. Create a test-run manifest following `schemas/test-run.schema.json` and generate artifacts with:
 
    ```bash
    python3 scripts/generate_artifacts.py run.json artifacts/
+   python3 scripts/generate_dashboard.py run.json artifacts/
    ```
 
 8. Review the sanitized publication plan with `scripts/publish_artifacts.py` in its default dry-run mode. Publish to Confluence or create/update ClickUp tasks only after explicit authorization for those mutations and resolved platform IDs.

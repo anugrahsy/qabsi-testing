@@ -23,6 +23,7 @@ AQABSI applies risk-based testing and established black-box techniques. Testing 
 | Role/State | Identify actor authorization and starting state where relevant |
 | Technique | Equivalence, boundary, decision table, state transition, pairwise, scenario, exploratory charter, abuse case, or contract |
 | Module/Feature/Layer | Identify scope and evidence level |
+| Domain | Backend (`BE`), frontend (`FE`), or `both`; derived from layer when omitted (`api`/`contract`/`security`/`integration`/`data`/`migration` → `BE`; `component`/`e2e`/`accessibility`/`usability`/`compatibility` → `FE`) |
 | Scenario | One clear condition/outcome |
 | Preconditions | Observable starting state and role |
 | Test data | Synthetic/minimized; secrets never embedded |

@@ -37,7 +37,7 @@ class ValidatePackageTest(unittest.TestCase):
         self.assertIn("AQABSI — AI QA BSI", skill)
         self.assertIn("$aqabsi-testing", openai)
         self.assertEqual(plugin["name"], "aqabsi")
-        self.assertEqual(plugin["version"], "2.1.0")
+        self.assertEqual(plugin["version"], "2.2.0")
         self.assertEqual(plugin["interface"]["displayName"], "AQABSI — AI QA BSI")
         self.assertIn(".aqabsi-output/", ignored)
 

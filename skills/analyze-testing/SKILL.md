@@ -9,8 +9,8 @@ Use this end-to-end mode only when requirements or test cases are missing or unr
 
 1. Read `../../references/execution-safety.md`; establish repositories/commits, target, environment, accounts/roles, scope, prohibited actions, cleanup, publication authority, and stop conditions.
 2. Reuse an existing checkout when supplied. If cloning is needed, clone only the authorized URLs into a safe workspace. Preserve dirty work and never inspect secret files unless explicitly required and authorized.
-3. Inventory ticket/contract/code/runtime evidence. Label each finding verified, inferred, assumed, open, or recommended.
-4. Build an as-is PRD with `../../references/prd-standard.md`. Do not convert implementation defects or missing behavior into intended requirements.
+3. Run `../../references/runtime-exploration.md` when the target UI is browser-accessible, then inventory ticket/contract/code/runtime evidence. Label each finding verified, inferred, assumed, open, or recommended.
+4. Build an as-is PRD with `../../references/prd-standard.md` from observed runtime evidence plus code. Do not convert implementation defects or missing behavior into intended requirements.
 5. Select relevant layers with `../../references/test-strategy.md` and `../../references/skill-tree.md`.
 6. Generate requirement- and risk-linked test cases using `../../references/rules.md`.
 7. Execute only authorized checks with real runners/tools. Record commands, versions, timestamps, actual results, and evidence. Never fabricate a pass/fail.

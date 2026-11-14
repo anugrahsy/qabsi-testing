@@ -22,6 +22,22 @@ PRIORITIES = ("critical", "high", "medium", "low")
 SEVERITIES = ("critical", "high", "medium", "low", "info")
 ENVIRONMENTS = ("local", "test", "development", "staging", "production")
 LAYERS = ("static", "unit", "component", "integration", "contract", "api", "e2e", "exploratory", "regression", "smoke", "security", "accessibility", "compatibility", "data", "migration", "resilience", "observability", "performance", "load", "stress", "endurance", "scalability", "reliability", "usability", "localization")
+DOMAINS = ("BE", "FE", "both")
+FE_LAYERS = {"component", "e2e", "accessibility", "usability", "compatibility"}
+
+
+def resolve_domain(case: dict[str, Any]) -> str:
+    """Resolve the backend/frontend domain, honouring an explicit field when present."""
+    explicit = case.get("domain") or case.get("tag")
+    if isinstance(explicit, str) and explicit.strip():
+        lowered = explicit.strip().lower()
+        if lowered == "both":
+            return "both"
+        if lowered in ("be", "fe"):
+            return lowered.upper()
+    if case.get("layer") in FE_LAYERS:
+        return "FE"
+    return "BE"
 SECRET_KEYS = {
     "password",
     "passwd",
@@ -55,6 +71,7 @@ CSV_COLUMNS = (
     "Module",
     "Feature",
     "Layer",
+    "Domain",
     "Scenario",
     "Preconditions",
     "Test Steps",
@@ -220,6 +237,7 @@ def case_to_row(case: dict[str, Any]) -> dict[str, str]:
         "Module": case["module"],
         "Feature": case["feature"],
         "Layer": case["layer"],
+        "Domain": resolve_domain(case),
         "Scenario": case["scenario"],
         "Preconditions": _compact(case["preconditions"]),
         "Test Steps": _compact(case["steps"]),
@@ -240,6 +258,18 @@ def _summary(cases: list[dict[str, Any]]) -> dict[str, int]:
     for case in cases:
         counts[case["status"]] += 1
     return counts
+
+
+def build_coverage_matrix(data: dict[str, Any]) -> dict[str, Any]:
+    requirement_ids = sorted(
+        {item for case in data["test_cases"] for item in case.get("requirement_ids", [])}
+    )
+    matrix = {req: {status: 0 for status in STATUSES} for req in requirement_ids}
+    for case in data["test_cases"]:
+        for req in case.get("requirement_ids", []):
+            if req in matrix:
+                matrix[req][case["status"]] += 1
+    return {"requirements": requirement_ids, "matrix": matrix}
 
 
 def build_markdown(data: dict[str, Any]) -> str:
@@ -268,8 +298,8 @@ def build_markdown(data: dict[str, Any]) -> str:
         "",
         "## Test cases",
         "",
-        "| ID | Requirements | Layer | Scenario | Expected | Actual | Status | Severity | Owner |",
-        "|---|---|---|---|---|---|---|---|---|",
+        "| ID | Requirements | Layer | Domain | Scenario | Expected | Actual | Status | Severity | Owner |",
+        "|---|---|---|---|---|---|---|---|---|---|",
     ]
     for case in data["test_cases"]:
         clean = lambda text: str(text).replace("|", "\\|").replace("\n", "<br>")
@@ -280,6 +310,7 @@ def build_markdown(data: dict[str, Any]) -> str:
                     case["id"],
                     ", ".join(case.get("requirement_ids", [])) or "—",
                     case["layer"],
+                    resolve_domain(case),
                     case["scenario"],
                     case["expected_result"],
                     case["actual_result"],
@@ -289,6 +320,46 @@ def build_markdown(data: dict[str, Any]) -> str:
                 )
             ) + " |"
         )
+
+    failed_cases = [case for case in data["test_cases"] if case["status"] == "fail"]
+    lines.extend(["", "## Failed test case execution logs", ""])
+    if failed_cases:
+        for case in failed_cases:
+            lines.extend(
+                [
+                    f"### {case['id']} — {case['scenario']}",
+                    "",
+                    f"**Domain:** {resolve_domain(case)}",
+                    f"**Priority / severity:** {case['priority']} / {case.get('severity') or '—'}",
+                    f"**Expected:** {case['expected_result']}",
+                    f"**Actual result:** {case['actual_result']}",
+                    "",
+                    "**Steps:**",
+                    "",
+                    *[f"{index}. {step}" for index, step in enumerate(case["steps"], start=1)],
+                    "",
+                    "**Evidence:**",
+                ]
+            )
+            if case["evidence"]:
+                lines.extend(f"- {item}" for item in case["evidence"])
+            else:
+                lines.append("- Not recorded")
+            lines.append("")
+    else:
+        lines.append("No failed test case was recorded for this run.")
+
+    coverage = build_coverage_matrix(data)
+    lines.extend(["", "## Coverage matrix", ""])
+    if coverage["requirements"]:
+        lines.append("| Requirement | " + " | ".join(STATUSES) + " |")
+        lines.append("|---|" + "---|" * len(STATUSES))
+        for req in coverage["requirements"]:
+            row = coverage["matrix"][req]
+            lines.append("| " + req + " | " + " | ".join(str(row[status]) for status in STATUSES) + " |")
+    else:
+        lines.append("No requirement traceability was recorded for this run.")
+
     access_rows = data.get("access_control_matrix") or []
     lines.extend(["", "## Access-control matrix", ""])
     if access_rows:
@@ -493,17 +564,26 @@ def build_clickup_drafts(data: dict[str, Any]) -> dict[str, Any]:
             {
                 "fingerprint": fingerprint,
                 "external_key": f"AQABSI-{fingerprint[:12]}",
-                "name": f"[BUG][{(case.get('severity') or 'untriaged').upper()}] {case['scenario']}",
+                "name": f"[BUG][{resolve_domain(case)}][{(case.get('severity') or 'untriaged').upper()}] {case['scenario']}",
                 "description_markdown": "\n".join(
                     [
                         f"**Test case:** {case['id']}",
+                        f"**Domain:** {resolve_domain(case)}",
                         f"**Requirements:** {', '.join(case.get('requirement_ids', [])) or 'Not linked'}",
                         f"**Environment:** {data['environment']}",
+                        f"**Priority / severity:** {case['priority']} / {case.get('severity') or '—'}",
                         f"**Expected:** {case['expected_result']}",
-                        f"**Actual:** {case['actual_result']}",
+                        "",
+                        "**Execution log:**",
+                        "",
                         "**Steps:**",
                         *[f"{index}. {step}" for index, step in enumerate(case["steps"], start=1)],
-                        f"**Evidence:** {', '.join(case['evidence']) or 'Not recorded'}",
+                        "",
+                        f"**Actual result:** {case['actual_result']}",
+                        "",
+                        "**Evidence:**",
+                        *([f"- {item}" for item in case["evidence"]] or ["- Not recorded"]),
+                        "",
                         f"**Source commit:** {data['source']['commit_sha']}",
                     ]
                 ),
@@ -533,11 +613,12 @@ def build_clickup_drafts(data: dict[str, Any]) -> dict[str, Any]:
                 "fingerprint": fingerprint,
                 "external_key": f"AQABSI-SEC-{fingerprint[:12]}",
                 "finding_id": finding.get("id"),
-                "name": f"[SECURITY][{str(finding.get('business_priority', 'unmapped')).upper()}] {finding.get('title', 'Confirmed security finding')}",
+                "name": f"[SECURITY][{resolve_domain(finding)}][{str(finding.get('business_priority', 'unmapped')).upper()}] {finding.get('title', 'Confirmed security finding')}",
                 "description_markdown": "\n".join(
                     [
                         f"**Finding:** {finding.get('id', 'Not recorded')}",
                         f"**Classification:** {finding.get('classification')}",
+                        f"**Domain:** {resolve_domain(finding)}",
                         f"**Target:** {finding.get('target', 'Not recorded')}",
                         f"**Expected:** {finding.get('expected_result', 'Not recorded')}",
                         f"**Actual:** {finding.get('actual_result', 'Not recorded')}",
